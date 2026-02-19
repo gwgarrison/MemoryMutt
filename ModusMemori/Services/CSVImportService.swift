@@ -41,13 +41,13 @@ class CSVImportService {
     ///   - url: URL to the CSV file
     ///   - deckName: Name for the new deck (defaults to filename)
     ///   - hasHeader: Whether the CSV has a header row to skip
-    ///   - delimiter: CSV delimiter character (default: comma)
+    ///   - delimiter: CSV delimiter character (default: auto-detect, falls back to comma)
     /// - Returns: ImportResult with deck and statistics
     func importCSV(
         from url: URL,
         deckName: String? = nil,
         hasHeader: Bool = true,
-        delimiter: Character = ","
+        delimiter: Character? = nil
     ) throws -> ImportResult {
         
         // Start accessing security-scoped resource
@@ -69,8 +69,11 @@ class CSVImportService {
             }
         }
         
+        // Auto-detect delimiter if not specified
+        let actualDelimiter = delimiter ?? detectDelimiter(in: content)
+        
         // Parse CSV lines
-        let lines = parseCSVLines(content, delimiter: delimiter)
+        let lines = parseCSVLines(content, delimiter: actualDelimiter)
         
         guard !lines.isEmpty else {
             throw ImportError.emptyFile
@@ -93,6 +96,7 @@ class CSVImportService {
         var cardsImported = 0
         var cardsSkipped = 0
         var errors: [String] = []
+        let maxErrorsToTrack = 100 // Limit error tracking to avoid memory issues
         
         // Process each row
         for (index, columns) in dataLines.enumerated() {
@@ -101,7 +105,9 @@ class CSVImportService {
             // Need at least 2 columns (front, back)
             guard columns.count >= 2 else {
                 cardsSkipped += 1
-                errors.append("Row \(rowNumber): Not enough columns (need at least 2)")
+                if errors.count < maxErrorsToTrack {
+                    errors.append("Row \(rowNumber): Not enough columns (need at least 2)")
+                }
                 continue
             }
             
@@ -111,7 +117,9 @@ class CSVImportService {
             // Skip empty cards
             guard !front.isEmpty && !back.isEmpty else {
                 cardsSkipped += 1
-                errors.append("Row \(rowNumber): Empty front or back")
+                if errors.count < maxErrorsToTrack {
+                    errors.append("Row \(rowNumber): Empty front or back")
+                }
                 continue
             }
             
@@ -127,6 +135,11 @@ class CSVImportService {
             card.deck = deck
             modelContext.insert(card)
             cardsImported += 1
+        }
+        
+        // Add summary if errors were truncated
+        if cardsSkipped > maxErrorsToTrack {
+            errors.append("... and \(cardsSkipped - maxErrorsToTrack) more rows skipped")
         }
         
         // If no cards were imported, delete the deck
@@ -146,6 +159,41 @@ class CSVImportService {
         )
     }
     
+    /// Detect the most likely delimiter in the CSV content
+    private func detectDelimiter(in content: String) -> Character {
+        // Get the first few lines for analysis
+        let lines = content.components(separatedBy: .newlines).prefix(5)
+        
+        let delimiters: [Character] = [",", ";", "\t", "|"]
+        var scores: [Character: Int] = [:]
+        
+        for delimiter in delimiters {
+            var counts: [Int] = []
+            for line in lines where !line.isEmpty {
+                // Count delimiters outside of quotes
+                var count = 0
+                var inQuotes = false
+                for char in line {
+                    if char == "\"" {
+                        inQuotes.toggle()
+                    } else if char == delimiter && !inQuotes {
+                        count += 1
+                    }
+                }
+                counts.append(count)
+            }
+            
+            // Score based on consistency (same count across lines) and having at least 1 delimiter
+            if let firstCount = counts.first, firstCount > 0 {
+                let isConsistent = counts.allSatisfy { $0 == firstCount }
+                scores[delimiter] = isConsistent ? firstCount * 10 : firstCount
+            }
+        }
+        
+        // Return delimiter with highest score, default to comma
+        return scores.max(by: { $0.value < $1.value })?.key ?? ","
+    }
+    
     /// Parse CSV content into rows of columns, handling quoted fields
     private func parseCSVLines(_ content: String, delimiter: Character) -> [[String]] {
         var results: [[String]] = []
@@ -153,7 +201,12 @@ class CSVImportService {
         var currentField = ""
         var insideQuotes = false
         
-        let chars = Array(content)
+        // Normalize line endings to \n
+        let normalizedContent = content
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+        
+        let chars = Array(normalizedContent)
         var i = 0
         
         while i < chars.count {
@@ -161,30 +214,51 @@ class CSVImportService {
             
             if insideQuotes {
                 if char == "\"" {
-                    // Check for escaped quote
+                    // Check for escaped quote ""
                     if i + 1 < chars.count && chars[i + 1] == "\"" {
                         currentField.append("\"")
                         i += 2
                         continue
                     } else {
+                        // End of quoted field
                         insideQuotes = false
                     }
+                } else if char == "\n" {
+                    // Newline inside quotes - check if this looks like a real multi-line field
+                    // or an unclosed quote. If the field is getting very long, assume unclosed quote.
+                    if currentField.count > 10000 {
+                        // Likely an unclosed quote - treat as end of row
+                        insideQuotes = false
+                        currentRow.append(currentField)
+                        if currentRow.count > 0 {
+                            results.append(currentRow)
+                        }
+                        currentRow = []
+                        currentField = ""
+                    } else {
+                        // Allow newline inside quoted field
+                        currentField.append(char)
+                    }
                 } else {
+                    // Inside quotes, add character
                     currentField.append(char)
                 }
             } else {
-                if char == "\"" {
+                if char == "\"" && currentField.isEmpty {
+                    // Start of quoted field (only if at beginning of field)
                     insideQuotes = true
+                } else if char == "\"" {
+                    // Quote in middle of unquoted field - just add it
+                    currentField.append(char)
                 } else if char == delimiter {
+                    // End of field
                     currentRow.append(currentField)
                     currentField = ""
-                } else if char == "\n" || char == "\r" {
-                    // Handle \r\n
-                    if char == "\r" && i + 1 < chars.count && chars[i + 1] == "\n" {
-                        i += 1
-                    }
+                } else if char == "\n" {
+                    // End of row
                     currentRow.append(currentField)
-                    if !currentRow.allSatisfy({ $0.isEmpty }) {
+                    // Only add row if it has content
+                    if currentRow.count > 0 {
                         results.append(currentRow)
                     }
                     currentRow = []
@@ -196,12 +270,10 @@ class CSVImportService {
             i += 1
         }
         
-        // Handle last field/row
-        if !currentField.isEmpty || !currentRow.isEmpty {
-            currentRow.append(currentField)
-            if !currentRow.allSatisfy({ $0.isEmpty }) {
-                results.append(currentRow)
-            }
+        // Handle last field/row (file might not end with newline)
+        currentRow.append(currentField)
+        if currentRow.count > 0 && !currentRow.allSatisfy({ $0.trimmingCharacters(in: .whitespaces).isEmpty }) {
+            results.append(currentRow)
         }
         
         return results

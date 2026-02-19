@@ -32,15 +32,15 @@ struct SM2Algorithm {
         var newInterval: Int
         var newStatus: CardStatus
         
-        if quality < 2 {
-            // If response was "Again" (quality 0), reset the card
+        if rating == .incorrect {
+            // User doesn't know the card - reset progress
             newInterval = 0
             newStatus = .learning
         } else {
-            // Calculate new interval based on current state
+            // User knows the card - advance based on current state
             switch currentStatus {
             case .new:
-                // First time seeing the card
+                // First time seeing the card correctly
                 newInterval = 1
                 newStatus = .learning
                 
@@ -64,17 +64,6 @@ struct SM2Algorithm {
                 // Card is mastered, continue with longer intervals
                 newInterval = Int(Double(currentInterval) * newEaseFactor)
                 newStatus = .mastered
-            }
-            
-            // Apply bonus for "Easy" rating
-            if rating == .easy {
-                newInterval = Int(Double(newInterval) * 1.3)
-            }
-            
-            // Apply penalty for "Hard" rating
-            if rating == .hard {
-                newInterval = Int(Double(newInterval) * 0.8)
-                newInterval = max(1, newInterval)
             }
         }
         

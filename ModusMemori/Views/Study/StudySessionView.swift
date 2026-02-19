@@ -81,6 +81,7 @@ struct StudySessionView: View {
             // Flashcard
             flashcardView(card: card)
                 .padding(.horizontal, 20)
+                .id(card.id) // Force view refresh when card changes
             
             Spacer()
             
@@ -190,25 +191,35 @@ struct StudySessionView: View {
     
     private var ratingButtons: some View {
         VStack(spacing: 12) {
-            Text("How well did you know this?")
+            Text("Did you know it?")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
             
-            HStack(spacing: 12) {
-                RatingButton(rating: .again, color: .red) {
-                    submitRating(.again)
+            HStack(spacing: 40) {
+                // X button - Don't know
+                Button {
+                    submitRating(.incorrect)
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(width: 80, height: 80)
+                        .background(Color.red)
+                        .clipShape(Circle())
+                        .shadow(color: .red.opacity(0.3), radius: 8, x: 0, y: 4)
                 }
                 
-                RatingButton(rating: .hard, color: .orange) {
-                    submitRating(.hard)
-                }
-                
-                RatingButton(rating: .good, color: .green) {
-                    submitRating(.good)
-                }
-                
-                RatingButton(rating: .easy, color: .blue) {
-                    submitRating(.easy)
+                // Checkmark button - Know it
+                Button {
+                    submitRating(.correct)
+                } label: {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(width: 80, height: 80)
+                        .background(Color.green)
+                        .clipShape(Circle())
+                        .shadow(color: .green.opacity(0.3), radius: 8, x: 0, y: 4)
                 }
             }
             .padding(.horizontal, 20)
@@ -216,13 +227,12 @@ struct StudySessionView: View {
     }
     
     private func submitRating(_ rating: ReviewRating) {
-        sessionManager.recordReview(rating: rating)
+        // Reset state immediately (no animation) before moving to next card
+        isFlipped = false
+        showingHint = false
         
-        // Reset for next card
-        withAnimation {
-            isFlipped = false
-            showingHint = false
-        }
+        // Record the review (this advances to next card)
+        sessionManager.recordReview(rating: rating)
     }
     
     private var completionView: some View {

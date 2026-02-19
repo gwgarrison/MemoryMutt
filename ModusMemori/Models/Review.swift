@@ -2,33 +2,28 @@ import Foundation
 import SwiftData
 
 enum ReviewRating: String, Codable, CaseIterable {
-    case again = "again"
-    case hard = "hard"
-    case good = "good"
-    case easy = "easy"
+    case incorrect = "incorrect"  // User doesn't know the answer (X button)
+    case correct = "correct"      // User knows the answer (checkmark button)
     
     var displayName: String {
         switch self {
-        case .again: return "Again"
-        case .hard: return "Hard"
-        case .good: return "Good"
-        case .easy: return "Easy"
+        case .incorrect: return "Don't Know"
+        case .correct: return "Know It"
         }
     }
     
+    /// Quality score for SM-2 algorithm (0-5 scale)
     var quality: Int {
         switch self {
-        case .again: return 0
-        case .hard: return 2
-        case .good: return 3
-        case .easy: return 5
+        case .incorrect: return 0
+        case .correct: return 4
         }
     }
     
     var isCorrect: Bool {
         switch self {
-        case .again: return false
-        case .hard, .good, .easy: return true
+        case .incorrect: return false
+        case .correct: return true
         }
     }
 }
@@ -44,7 +39,7 @@ final class Review {
     var session: StudySession?
     
     var rating: ReviewRating {
-        get { ReviewRating(rawValue: ratingRawValue) ?? .again }
+        get { ReviewRating(rawValue: ratingRawValue) ?? .incorrect }
         set { ratingRawValue = newValue.rawValue }
     }
     

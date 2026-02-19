@@ -69,15 +69,17 @@ To become the go-to mobile application for efficient learning through scientific
   - Select deck to study
   - Display card front, user attempts recall
   - Tap to reveal answer
-  - Rate difficulty: Again, Hard, Good, Easy
+  - Simple binary rating: ✓ (Know It) or ✗ (Don't Know)
   - Visual progress indicator (cards remaining)
   - Session summary at completion
+  
 
 - **Spaced Repetition Algorithm**
-  - Implement SM-2 or Leitner system
+  - Implement simplified SM-2 algorithm
+  - Binary feedback: correct (advances interval) or incorrect (resets to learning)
   - Schedule card reviews based on performance
   - Prioritize cards due for review
-  - Adjust intervals based on user ratings
+  - Adjust intervals based on user responses
 
 - **Study Settings**
   - Daily card limit
