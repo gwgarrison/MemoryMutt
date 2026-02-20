@@ -9,6 +9,7 @@ class StudySessionManager: ObservableObject {
     @Published var currentCardIndex: Int = 0
     @Published var isSessionActive: Bool = false
     @Published var cardStartTime: Date = Date()
+    @Published var isReversed: Bool = false
     
     private var modelContext: ModelContext?
     
@@ -35,7 +36,8 @@ class StudySessionManager: ObservableObject {
     }
     
     /// Start a new study session for a deck
-    func startSession(deck: Deck, newCardsLimit: Int = 20, reviewLimit: Int = 100) {
+    func startSession(deck: Deck, newCardsLimit: Int = 20, reviewLimit: Int = 100, reversed: Bool = false) {
+        self.isReversed = reversed
         // Get due cards and new cards
         let dueCards = deck.cards.filter { $0.isDue && $0.status != .new }
         let newCards = deck.cards.filter { $0.status == .new }

@@ -12,18 +12,21 @@ struct StudySessionView: View {
     @State private var showingHint = false
     @State private var cardStartTime = Date()
     @State private var showingExitAlert = false
+    @State private var reverseCards = false
+    @State private var hasStarted = false
     
     var body: some View {
         NavigationStack {
             Group {
-                if sessionManager.isSessionActive {
+                if !hasStarted {
+                    sessionSetupView
+                } else if sessionManager.isSessionActive {
                     if let card = sessionManager.currentCard {
                         studyCardView(card: card)
                     } else {
                         completionView
                     }
                 } else if sessionManager.cardQueue.isEmpty && sessionManager.currentSession == nil {
-                    // Session just started but no cards
                     noCardsView
                 } else {
                     completionView
@@ -57,10 +60,6 @@ struct StudySessionView: View {
                     }
                 }
             }
-            .onAppear {
-                sessionManager.setModelContext(modelContext)
-                sessionManager.startSession(deck: deck)
-            }
             .alert("End Session?", isPresented: $showingExitAlert) {
                 Button("Continue Studying", role: .cancel) { }
                 Button("End Session") {
@@ -70,6 +69,72 @@ struct StudySessionView: View {
             } message: {
                 Text("You've studied \(sessionManager.cardsStudied) cards. Are you sure you want to end this session?")
             }
+        }
+    }
+    
+    // MARK: - Session Setup
+    
+    private var sessionSetupView: some View {
+        VStack(spacing: 30) {
+            Spacer()
+            
+            Image(systemName: deck.icon)
+                .font(.system(size: 60))
+                .foregroundStyle(Color(deck.color))
+                .frame(width: 120, height: 120)
+                .background(Color(deck.color).opacity(0.15))
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+            
+            VStack(spacing: 8) {
+                Text(deck.name)
+                    .font(.title)
+                    .fontWeight(.bold)
+                
+                Text("\(deck.cardsDueCount) due · \(deck.newCardsCount) new")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            
+            // Reverse toggle
+            VStack(spacing: 12) {
+                Toggle(isOn: $reverseCards) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "arrow.left.arrow.right")
+                            .font(.title3)
+                            .foregroundStyle(Color.accentColor)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Reverse Cards")
+                                .font(.headline)
+                            Text("Show the answer first, guess the question")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+            }
+            .padding(.horizontal, 20)
+            
+            Spacer()
+            
+            Button {
+                sessionManager.setModelContext(modelContext)
+                sessionManager.startSession(deck: deck, reversed: reverseCards)
+                hasStarted = true
+            } label: {
+                Label("Start Studying", systemImage: "play.fill")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.accentColor)
+                    .foregroundStyle(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 30)
         }
     }
     
@@ -96,10 +161,13 @@ struct StudySessionView: View {
     }
     
     private func flashcardView(card: Card) -> some View {
-        ZStack {
+        let frontContent = sessionManager.isReversed ? card.back : card.front
+        let backContent = sessionManager.isReversed ? card.front : card.back
+        
+        return ZStack {
             // Back of card
             cardFace(
-                content: card.back,
+                content: backContent,
                 isBack: true
             )
             .rotation3DEffect(
@@ -110,7 +178,7 @@ struct StudySessionView: View {
             
             // Front of card
             cardFace(
-                content: card.front,
+                content: frontContent,
                 isBack: false
             )
             .rotation3DEffect(
@@ -129,8 +197,12 @@ struct StudySessionView: View {
     }
     
     private func cardFace(content: String, isBack: Bool) -> some View {
-        VStack {
-            Text(isBack ? "Answer" : "Question")
+        let label = isBack
+            ? (sessionManager.isReversed ? "Front" : "Answer")
+            : (sessionManager.isReversed ? "Back" : "Question")
+        
+        return VStack {
+            Text(label)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .padding(.top, 16)
