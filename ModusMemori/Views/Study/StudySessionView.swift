@@ -8,6 +8,8 @@ struct StudySessionView: View {
     let deck: Deck
     
     @StateObject private var sessionManager = StudySessionManager()
+    @AppStorage("cardsPerSession") private var cardsPerSession: Int = 20
+    @State private var sessionCardCount: Int = 20
     @State private var isFlipped = false
     @State private var showingHint = false
     @State private var cardStartTime = Date()
@@ -20,14 +22,14 @@ struct StudySessionView: View {
             Group {
                 if !hasStarted {
                     sessionSetupView
+                } else if sessionManager.cardQueue.isEmpty {
+                    noCardsView
                 } else if sessionManager.isSessionActive {
                     if let card = sessionManager.currentCard {
                         studyCardView(card: card)
                     } else {
                         completionView
                     }
-                } else if sessionManager.cardQueue.isEmpty && sessionManager.currentSession == nil {
-                    noCardsView
                 } else {
                     completionView
                 }
@@ -115,6 +117,26 @@ struct StudySessionView: View {
                 .padding()
                 .background(Color(.systemGray6))
                 .clipShape(RoundedRectangle(cornerRadius: 16))
+                
+                // Cards per session stepper
+                Stepper(value: $sessionCardCount, in: 5...200, step: 5) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "number")
+                            .font(.title3)
+                            .foregroundStyle(Color.accentColor)
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Cards Per Session")
+                                .font(.headline)
+                            Text("\(sessionCardCount) cards")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
             }
             .padding(.horizontal, 20)
             
@@ -122,7 +144,7 @@ struct StudySessionView: View {
             
             Button {
                 sessionManager.setModelContext(modelContext)
-                sessionManager.startSession(deck: deck, reversed: reverseCards)
+                sessionManager.startSession(deck: deck, cardLimit: sessionCardCount, reversed: reverseCards)
                 hasStarted = true
             } label: {
                 Label("Start Studying", systemImage: "play.fill")
@@ -136,7 +158,9 @@ struct StudySessionView: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 30)
         }
-    }
+        .onAppear {
+            sessionCardCount = cardsPerSession
+        }}
     
     @ViewBuilder
     private func studyCardView(card: Card) -> some View {
@@ -196,6 +220,14 @@ struct StudySessionView: View {
         }
     }
     
+    private func wikipediaURL(for text: String) -> URL? {
+        let query = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: " ", with: "_")
+        guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+              !encoded.isEmpty else { return nil }
+        return URL(string: "https://en.wikipedia.org/wiki/\(encoded)")
+    }
+    
     private func cardFace(content: String, isBack: Bool) -> some View {
         let label = isBack
             ? (sessionManager.isReversed ? "Front" : "Answer")
@@ -216,7 +248,17 @@ struct StudySessionView: View {
             
             Spacer()
             
-            if !isBack && !isFlipped {
+            if isBack, let url = wikipediaURL(for: content) {
+                Link(destination: url) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "book.closed")
+                        Text("Wikipedia")
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.blue)
+                }
+                .padding(.bottom, 16)
+            } else if !isBack && !isFlipped {
                 Text("Tap to reveal")
                     .font(.caption)
                     .foregroundStyle(.secondary)

@@ -68,11 +68,17 @@ struct SM2Algorithm {
         }
         
         // Calculate next review date
-        let nextReviewDate = Calendar.current.date(
-            byAdding: .day,
-            value: max(newInterval, 1),
-            to: Date()
-        ) ?? Date()
+        let nextReviewDate: Date
+        if newInterval == 0 {
+            // Incorrect answer — card is due immediately
+            nextReviewDate = Date()
+        } else {
+            nextReviewDate = Calendar.current.date(
+                byAdding: .day,
+                value: newInterval,
+                to: Date()
+            ) ?? Date()
+        }
         
         return (newEaseFactor, newInterval, nextReviewDate, newStatus)
     }

@@ -36,25 +36,39 @@ class StudySessionManager: ObservableObject {
     }
     
     /// Start a new study session for a deck
-    func startSession(deck: Deck, newCardsLimit: Int = 20, reviewLimit: Int = 100, reversed: Bool = false) {
+    func startSession(deck: Deck, cardLimit: Int = 20, newCardsLimit: Int = 20, reviewLimit: Int = 100, reversed: Bool = false) {
         self.isReversed = reversed
-        // Get due cards and new cards
-        let dueCards = deck.cards.filter { $0.isDue && $0.status != .new }
+        // Get cards by category
         let newCards = deck.cards.filter { $0.status == .new }
+        let dueCards = deck.cards.filter { $0.isDue && $0.status != .new }
         
         // Limit cards based on settings
-        let selectedNewCards = Array(newCards.prefix(newCardsLimit))
-        let selectedReviewCards = Array(dueCards.prefix(reviewLimit))
+        let selectedNewCards = Array(newCards.shuffled().prefix(newCardsLimit))
+        let selectedReviewCards = Array(dueCards.shuffled().prefix(reviewLimit))
         
-        // Combine and shuffle
-        cardQueue = (selectedNewCards + selectedReviewCards).shuffled()
+        // Combine and cap to the session card limit
+        var combined = (selectedNewCards + selectedReviewCards).shuffled()
+        
+        // If we don't have enough due/new cards to fill the session,
+        // include learning cards that aren't due yet so the user can still study
+        if combined.count < cardLimit {
+            let selectedIds = Set(combined.map { $0.id })
+            let additionalCards = deck.cards
+                .filter { !selectedIds.contains($0.id) && $0.status != .mastered }
+                .shuffled()
+            combined.append(contentsOf: additionalCards.prefix(cardLimit - combined.count))
+        }
+        
+        cardQueue = Array(combined.prefix(cardLimit))
         currentCardIndex = 0
         cardStartTime = Date()
         
         // Create session
+        let actualNewCount = cardQueue.filter { $0.status == .new }.count
+        let actualReviewCount = cardQueue.count - actualNewCount
         let session = StudySession(
-            cardsNew: selectedNewCards.count,
-            cardsReview: selectedReviewCards.count
+            cardsNew: actualNewCount,
+            cardsReview: actualReviewCount
         )
         session.deck = deck
         currentSession = session

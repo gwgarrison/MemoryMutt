@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @AppStorage("dailyCardLimit") private var dailyCardLimit: Int = 100
     @AppStorage("newCardsPerDay") private var newCardsPerDay: Int = 20
+    @AppStorage("cardsPerSession") private var cardsPerSession: Int = 20
     @AppStorage("reviewOrder") private var reviewOrder: String = "random"
     @AppStorage("showProgressDuringSession") private var showProgressDuringSession: Bool = true
     @AppStorage("enableHaptics") private var enableHaptics: Bool = true
@@ -27,6 +28,15 @@ struct SettingsView: View {
                             Text("New Cards Per Day")
                             Spacer()
                             Text("\(newCardsPerDay)")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    
+                    Stepper(value: $cardsPerSession, in: 5...200, step: 5) {
+                        HStack {
+                            Text("Cards Per Session")
+                            Spacer()
+                            Text("\(cardsPerSession)")
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -111,6 +121,7 @@ struct SettingsView: View {
     private func resetToDefaults() {
         dailyCardLimit = 100
         newCardsPerDay = 20
+        cardsPerSession = 20
         reviewOrder = "random"
         showProgressDuringSession = true
         enableHaptics = true
