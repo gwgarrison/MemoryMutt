@@ -192,6 +192,7 @@ struct StudySessionView: View {
             // Back of card
             cardFace(
                 content: backContent,
+                otherSideContent: frontContent,
                 isBack: true
             )
             .rotation3DEffect(
@@ -203,6 +204,7 @@ struct StudySessionView: View {
             // Front of card
             cardFace(
                 content: frontContent,
+                otherSideContent: backContent,
                 isBack: false
             )
             .rotation3DEffect(
@@ -220,15 +222,19 @@ struct StudySessionView: View {
         }
     }
     
-    private func wikipediaURL(for text: String) -> URL? {
-        let query = text.trimmingCharacters(in: .whitespacesAndNewlines)
-            .replacingOccurrences(of: " ", with: "_")
+    private func wikipediaURL(for text: String, fallback: String) -> URL? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        // If the answer is a number, use the question side instead
+        let target = trimmed.allSatisfy({ $0.isNumber || $0 == "." || $0 == "," || $0 == " " })
+            ? fallback.trimmingCharacters(in: .whitespacesAndNewlines)
+            : trimmed
+        let query = target.replacingOccurrences(of: " ", with: "_")
         guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
               !encoded.isEmpty else { return nil }
         return URL(string: "https://en.wikipedia.org/wiki/\(encoded)")
     }
     
-    private func cardFace(content: String, isBack: Bool) -> some View {
+    private func cardFace(content: String, otherSideContent: String, isBack: Bool) -> some View {
         let label = isBack
             ? (sessionManager.isReversed ? "Front" : "Answer")
             : (sessionManager.isReversed ? "Back" : "Question")
@@ -248,7 +254,7 @@ struct StudySessionView: View {
             
             Spacer()
             
-            if isBack, let url = wikipediaURL(for: content) {
+            if isBack, let url = wikipediaURL(for: content, fallback: otherSideContent) {
                 Link(destination: url) {
                     HStack(spacing: 4) {
                         Image(systemName: "book.closed")
