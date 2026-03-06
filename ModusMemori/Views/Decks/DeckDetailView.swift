@@ -184,11 +184,11 @@ struct CardRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(card.front)
-                .font(.headline)
+                .font(card.front.isEmoji ? .system(size: 40) : .headline)
                 .lineLimit(1)
             
             Text(card.back)
-                .font(.subheadline)
+                .font(card.back.isEmoji ? .system(size: 40) : .subheadline)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
             

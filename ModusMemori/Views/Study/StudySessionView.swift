@@ -248,7 +248,7 @@ struct StudySessionView: View {
             Spacer()
             
             Text(content)
-                .font(.title2)
+                .font(content.isEmoji ? .system(size: 80) : .title2)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 20)
             
