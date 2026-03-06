@@ -10,8 +10,11 @@ class StudySessionManager: ObservableObject {
     @Published var isSessionActive: Bool = false
     @Published var cardStartTime: Date = Date()
     @Published var isReversed: Bool = false
+    @Published var studyMode: StudyMode = .flashcard
+    @Published var currentChoices: [String] = []
     
     private var modelContext: ModelContext?
+    private var allDeckCards: [Card] = []
     
     var currentCard: Card? {
         guard currentCardIndex < cardQueue.count else { return nil }
@@ -36,8 +39,10 @@ class StudySessionManager: ObservableObject {
     }
     
     /// Start a new study session for a deck
-    func startSession(deck: Deck, cardLimit: Int = 20, newCardsLimit: Int = 20, reviewLimit: Int = 100, reversed: Bool = false) {
+    func startSession(deck: Deck, cardLimit: Int = 20, newCardsLimit: Int = 20, reviewLimit: Int = 100, reversed: Bool = false, mode: StudyMode = .flashcard) {
         self.isReversed = reversed
+        self.studyMode = mode
+        self.allDeckCards = deck.cards
         // Get cards by category
         let newCards = deck.cards.filter { $0.status == .new }
         let dueCards = deck.cards.filter { $0.isDue && $0.status != .new }
@@ -76,6 +81,11 @@ class StudySessionManager: ObservableObject {
         
         // Insert session into context
         modelContext?.insert(session)
+        
+        // Generate choices for the first card if in multiple choice mode
+        if mode == .multipleChoice {
+            generateChoices()
+        }
     }
     
     /// Record a review for the current card
@@ -112,6 +122,8 @@ class StudySessionManager: ObservableObject {
         // Check if session is complete
         if currentCardIndex >= cardQueue.count {
             endSession()
+        } else if studyMode == .multipleChoice {
+            generateChoices()
         }
     }
     
@@ -124,11 +136,44 @@ class StudySessionManager: ObservableObject {
         try? modelContext?.save()
     }
     
+    /// Generate 4 multiple choice options for the current card
+    func generateChoices() {
+        guard let card = currentCard else {
+            currentChoices = []
+            return
+        }
+        
+        // The correct answer is the "back" side (or "front" if reversed)
+        let correctAnswer = isReversed ? card.front : card.back
+        
+        // Gather distractor answers from other cards in the deck
+        let otherAnswers = allDeckCards
+            .filter { $0.id != card.id }
+            .map { isReversed ? $0.front : $0.back }
+            .filter { $0 != correctAnswer }
+        
+        let distractors = Array(otherAnswers.shuffled().prefix(3))
+        
+        // Combine correct answer with distractors and shuffle
+        var choices = [correctAnswer] + distractors
+        choices.shuffle()
+        
+        currentChoices = choices
+    }
+    
+    /// The correct answer for the current card in multiple choice mode
+    var correctAnswer: String? {
+        guard let card = currentCard else { return nil }
+        return isReversed ? card.front : card.back
+    }
+    
     /// Reset session state
     func reset() {
         currentSession = nil
         cardQueue = []
         currentCardIndex = 0
         isSessionActive = false
+        currentChoices = []
+        allDeckCards = []
     }
 }

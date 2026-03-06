@@ -15,6 +15,8 @@ struct StudySessionView: View {
     @State private var cardStartTime = Date()
     @State private var showingExitAlert = false
     @State private var reverseCards = false
+    @State private var studyMode: StudyMode = .flashcard
+    @State private var matchCardCount: Int = 5
     @State private var hasStarted = false
     
     var body: some View {
@@ -25,8 +27,14 @@ struct StudySessionView: View {
                 } else if sessionManager.cardQueue.isEmpty {
                     noCardsView
                 } else if sessionManager.isSessionActive {
-                    if let card = sessionManager.currentCard {
-                        studyCardView(card: card)
+                    if sessionManager.studyMode == .matchGame {
+                        matchGameView
+                    } else if let card = sessionManager.currentCard {
+                        if sessionManager.studyMode == .multipleChoice {
+                            multipleChoiceCardView(card: card)
+                        } else {
+                            studyCardView(card: card)
+                        }
                     } else {
                         completionView
                     }
@@ -49,7 +57,7 @@ struct StudySessionView: View {
                     }
                 }
                 
-                if sessionManager.isSessionActive {
+                if sessionManager.isSessionActive && sessionManager.studyMode != .matchGame {
                     ToolbarItem(placement: .principal) {
                         ProgressView(value: sessionManager.progress)
                             .frame(width: 120)
@@ -97,46 +105,98 @@ struct StudySessionView: View {
                     .foregroundStyle(.secondary)
             }
             
-            // Reverse toggle
+            // Study mode and options
             VStack(spacing: 12) {
-                Toggle(isOn: $reverseCards) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "arrow.left.arrow.right")
-                            .font(.title3)
-                            .foregroundStyle(Color.accentColor)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Reverse Cards")
-                                .font(.headline)
-                            Text("Show the answer first, guess the question")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                // Study mode picker
+                HStack(spacing: 12) {
+                    Image(systemName: studyMode.icon)
+                        .font(.title3)
+                        .foregroundStyle(Color.accentColor)
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Study Mode")
+                            .font(.headline)
+                        Text(studyModeDescription)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Picker("Study Mode", selection: $studyMode) {
+                        ForEach(StudyMode.allCases, id: \.self) { mode in
+                            Text(mode.displayName).tag(mode)
                         }
                     }
+                    .pickerStyle(.menu)
                 }
                 .padding()
                 .background(Color(.systemGray6))
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 
-                // Cards per session stepper
-                Stepper(value: $sessionCardCount, in: 5...200, step: 5) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "number")
-                            .font(.title3)
-                            .foregroundStyle(Color.accentColor)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Cards Per Session")
-                                .font(.headline)
-                            Text("\(sessionCardCount) cards")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                // Reverse toggle (only for flashcard mode)
+                if studyMode == .flashcard {
+                    Toggle(isOn: $reverseCards) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "arrow.left.arrow.right")
+                                .font(.title3)
+                                .foregroundStyle(Color.accentColor)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Reverse Cards")
+                                    .font(.headline)
+                                Text("Show the answer first, guess the question")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
-                .padding()
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                
+                if studyMode == .matchGame {
+                    // Match pairs stepper (max 7)
+                    Stepper(value: $matchCardCount, in: 2...7) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "square.grid.2x2")
+                                .font(.title3)
+                                .foregroundStyle(Color.accentColor)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Pairs to Match")
+                                    .font(.headline)
+                                Text("\(matchCardCount) pairs (\(matchCardCount * 2) tiles)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                } else {
+                    // Cards per session stepper
+                    Stepper(value: $sessionCardCount, in: 5...200, step: 5) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "number")
+                                .font(.title3)
+                                .foregroundStyle(Color.accentColor)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Cards Per Session")
+                                    .font(.headline)
+                                Text("\(sessionCardCount) cards")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
             }
             .padding(.horizontal, 20)
             
@@ -144,7 +204,8 @@ struct StudySessionView: View {
             
             Button {
                 sessionManager.setModelContext(modelContext)
-                sessionManager.startSession(deck: deck, cardLimit: sessionCardCount, reversed: reverseCards)
+                let limit = studyMode == .matchGame ? min(matchCardCount, deck.cards.count) : sessionCardCount
+                sessionManager.startSession(deck: deck, cardLimit: limit, reversed: reverseCards, mode: studyMode)
                 hasStarted = true
             } label: {
                 Label("Start Studying", systemImage: "play.fill")
@@ -161,6 +222,39 @@ struct StudySessionView: View {
         .onAppear {
             sessionCardCount = cardsPerSession
         }}
+    
+    private var studyModeDescription: String {
+        switch studyMode {
+        case .flashcard: return "Flip cards to reveal answers"
+        case .multipleChoice: return "Pick from 4 answer choices"
+        case .matchGame: return "Match questions to answers"
+        }
+    }
+    
+    private var matchGameView: some View {
+        MatchGameView(cards: sessionManager.cardQueue) { correctMatches, totalAttempts in
+            // Record results into the session
+            if let session = sessionManager.currentSession {
+                session.cardsStudied = correctMatches
+                session.correctCount = correctMatches
+            }
+            sessionManager.endSession()
+        }
+    }
+    
+    @ViewBuilder
+    private func multipleChoiceCardView(card: Card) -> some View {
+        let questionText = sessionManager.isReversed ? card.back : card.front
+        
+        MultipleChoiceView(
+            questionText: questionText,
+            choices: sessionManager.currentChoices,
+            correctAnswer: sessionManager.correctAnswer ?? ""
+        ) { wasCorrect in
+            sessionManager.recordReview(rating: wasCorrect ? .correct : .incorrect)
+        }
+        .id(card.id)
+    }
     
     @ViewBuilder
     private func studyCardView(card: Card) -> some View {

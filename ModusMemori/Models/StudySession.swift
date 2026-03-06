@@ -1,6 +1,28 @@
 import Foundation
 import SwiftData
 
+enum StudyMode: String, Codable, CaseIterable {
+    case flashcard = "flashcard"
+    case multipleChoice = "multipleChoice"
+    case matchGame = "matchGame"
+    
+    var displayName: String {
+        switch self {
+        case .flashcard: return "Flashcard"
+        case .multipleChoice: return "Multiple Choice"
+        case .matchGame: return "Match Game"
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .flashcard: return "rectangle.portrait.on.rectangle.portrait"
+        case .multipleChoice: return "list.bullet.circle"
+        case .matchGame: return "square.grid.2x2"
+        }
+    }
+}
+
 @Model
 final class StudySession {
     var id: UUID
