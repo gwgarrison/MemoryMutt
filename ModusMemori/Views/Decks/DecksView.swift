@@ -10,6 +10,7 @@ struct DecksView: View {
     @State private var showingImportCSV = false
     @State private var sortOrder: SortOrder = .recent
     @State private var viewMode: ViewMode = .grid
+    @State private var showingStarterDecks = false
     
     enum SortOrder: String, CaseIterable {
         case recent = "Recent"
@@ -130,7 +131,48 @@ struct DecksView: View {
                 }
                 .padding()
             }
+            
+            // Starter decks section
+            if !hasAddedAllStarterDecks {
+                starterDecksSection
+            }
         }
+    }
+    
+    private var hasAddedAllStarterDecks: Bool {
+        StarterDeckService.availableDecks.allSatisfy { info in
+            StarterDeckService.isInstalled(info, existingDecks: decks)
+        }
+    }
+    
+    private var starterDecksSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Button {
+                withAnimation {
+                    showingStarterDecks.toggle()
+                }
+            } label: {
+                HStack {
+                    Text("Starter Decks")
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .rotationEffect(.degrees(showingStarterDecks ? 90 : 0))
+                }
+            }
+            .buttonStyle(.plain)
+            
+            if showingStarterDecks {
+                StarterDecksView()
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 20)
     }
     
     @ViewBuilder
@@ -149,17 +191,41 @@ struct DecksView: View {
     }
     
     private var emptyStateView: some View {
-        ContentUnavailableView {
-            Label("No Decks", systemImage: "rectangle.stack")
-        } description: {
-            Text("Create your first flashcard deck to get started")
-        } actions: {
-            Button {
-                showingNewDeck = true
-            } label: {
-                Text("Create Deck")
+        ScrollView {
+            VStack(spacing: 30) {
+                Spacer(minLength: 40)
+                
+                VStack(spacing: 12) {
+                    Image(systemName: "rectangle.stack")
+                        .font(.system(size: 50))
+                        .foregroundStyle(.secondary)
+                    
+                    Text("No Decks")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Text("Create your own deck or add a starter deck below")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                    
+                    Button {
+                        showingNewDeck = true
+                    } label: {
+                        Text("Create Deck")
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+                
+                // Starter decks
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Starter Decks")
+                        .font(.headline)
+                    
+                    StarterDecksView()
+                }
+                .padding(.horizontal, 20)
             }
-            .buttonStyle(.borderedProminent)
         }
     }
     
