@@ -32,6 +32,8 @@ struct StudySessionView: View {
                     } else if let card = sessionManager.currentCard {
                         if sessionManager.studyMode == .multipleChoice {
                             multipleChoiceCardView(card: card)
+                        } else if sessionManager.studyMode == .hangman {
+                            hangmanCardView(card: card)
                         } else {
                             studyCardView(card: card)
                         }
@@ -228,6 +230,7 @@ struct StudySessionView: View {
         case .flashcard: return "Flip cards to reveal answers"
         case .multipleChoice: return "Pick from 4 answer choices"
         case .matchGame: return "Match questions to answers"
+        case .hangman: return "Guess the answer letter by letter"
         }
     }
     
@@ -242,6 +245,17 @@ struct StudySessionView: View {
         }
     }
     
+    @ViewBuilder
+    private func hangmanCardView(card: Card) -> some View {
+        let questionText = sessionManager.isReversed ? card.back : card.front
+        let answer = sessionManager.isReversed ? card.front : card.back
+
+        HangmanView(questionText: questionText, answer: answer) { wasCorrect in
+            sessionManager.recordReview(rating: wasCorrect ? .correct : .incorrect)
+        }
+        .id(card.id)
+    }
+
     @ViewBuilder
     private func multipleChoiceCardView(card: Card) -> some View {
         let questionText = sessionManager.isReversed ? card.back : card.front
