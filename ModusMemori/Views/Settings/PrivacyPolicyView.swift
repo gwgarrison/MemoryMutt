@@ -32,9 +32,15 @@ struct PrivacyPolicyView: View {
                 }
 
                 Group {
+                    Text("In-App Purchases")
+                        .font(.headline)
+                    Text("The App offers optional one-time tip purchases (\"Tip Jar\") processed by Apple via the App Store. We do not collect or store any payment information — all transactions are handled entirely by Apple.")
+                }
+
+                Group {
                     Text("Third-Party Services")
                         .font(.headline)
-                    Text("The App uses no third-party SDKs, analytics tools, advertising networks, or external APIs. There are no in-app purchases, accounts, or sign-in flows.")
+                    Text("The App uses no third-party SDKs, analytics tools, or advertising networks. The only external service used is Apple's App Store for processing optional tip purchases.")
                 }
 
                 Group {
