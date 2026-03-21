@@ -29,10 +29,11 @@ class TipJarService {
         loadingState = .loading
         do {
             let fetched = try await Product.products(for: Self.productIDs)
+            print("TipJarService: fetched \(fetched.count) products: \(fetched.map(\.id))")
             products = fetched.sorted { $0.price < $1.price }
             loadingState = fetched.isEmpty ? .failed : .loaded
         } catch {
-            print("TipJarService: failed to load products: \(error)")
+            print("TipJarService: error loading products: \(error)")
             loadingState = .failed
         }
     }
