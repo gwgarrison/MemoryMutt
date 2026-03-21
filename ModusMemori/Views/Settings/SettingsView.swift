@@ -81,23 +81,11 @@ struct SettingsView: View {
                 // About
                 Section("About") {
                     LabeledContent("Version", value: "1.0.0")
-                    
-                    Link(destination: URL(string: "https://example.com/privacy")!) {
-                        HStack {
-                            Text("Privacy Policy")
-                            Spacer()
-                            Image(systemName: "arrow.up.right")
-                                .font(.caption)
-                        }
-                    }
-                    
-                    Link(destination: URL(string: "https://example.com/terms")!) {
-                        HStack {
-                            Text("Terms of Service")
-                            Spacer()
-                            Image(systemName: "arrow.up.right")
-                                .font(.caption)
-                        }
+
+                    NavigationLink {
+                        PrivacyPolicyView()
+                    } label: {
+                        Text("Privacy Policy")
                     }
                 }
                 
