@@ -1,0 +1,57 @@
+{
+  "identifier" : "tips",
+  "nonConsumableProducts" : [],
+  "consumableProducts" : [
+    {
+      "displayPrice" : "0.99",
+      "familySharable" : false,
+      "internalID" : "tip_small",
+      "localizations" : [
+        {
+          "description" : "Buy the developer a coffee",
+          "displayName" : "Small Tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.manicmutt.modusmemori.tip.small",
+      "referenceName" : "Small Tip",
+      "type" : "consumable"
+    },
+    {
+      "displayPrice" : "2.99",
+      "familySharable" : false,
+      "internalID" : "tip_medium",
+      "localizations" : [
+        {
+          "description" : "Buy the developer a slice of pizza",
+          "displayName" : "Medium Tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.manicmutt.modusmemori.tip.medium",
+      "referenceName" : "Medium Tip",
+      "type" : "consumable"
+    },
+    {
+      "displayPrice" : "4.99",
+      "familySharable" : false,
+      "internalID" : "tip_large",
+      "localizations" : [
+        {
+          "description" : "Buy the developer a movie ticket",
+          "displayName" : "Large Tip",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.manicmutt.modusmemori.tip.large",
+      "referenceName" : "Large Tip",
+      "type" : "consumable"
+    }
+  ],
+  "autoRenewableSubscriptions" : [],
+  "nonRenewingSubscriptions" : [],
+  "version" : {
+    "major" : 2,
+    "minor" : 0
+  }
+}
