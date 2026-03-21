@@ -1,11 +1,23 @@
 {
-  "identifier" : "tips",
-  "nonConsumableProducts" : [],
-  "consumableProducts" : [
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "B60222FA",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
     {
       "displayPrice" : "0.99",
-      "familySharable" : false,
-      "internalID" : "tip_small",
+      "familyShareable" : false,
+      "internalID" : "41729677",
       "localizations" : [
         {
           "description" : "Buy the developer a coffee",
@@ -15,12 +27,12 @@
       ],
       "productID" : "com.manicmutt.modusmemori.tip.small",
       "referenceName" : "Small Tip",
-      "type" : "consumable"
+      "type" : "Consumable"
     },
     {
       "displayPrice" : "2.99",
-      "familySharable" : false,
-      "internalID" : "tip_medium",
+      "familyShareable" : false,
+      "internalID" : "7F1AD14F",
       "localizations" : [
         {
           "description" : "Buy the developer a slice of pizza",
@@ -30,12 +42,12 @@
       ],
       "productID" : "com.manicmutt.modusmemori.tip.medium",
       "referenceName" : "Medium Tip",
-      "type" : "consumable"
+      "type" : "Consumable"
     },
     {
       "displayPrice" : "4.99",
-      "familySharable" : false,
-      "internalID" : "tip_large",
+      "familyShareable" : false,
+      "internalID" : "A3C8E21B",
       "localizations" : [
         {
           "description" : "Buy the developer a movie ticket",
@@ -45,13 +57,28 @@
       ],
       "productID" : "com.manicmutt.modusmemori.tip.large",
       "referenceName" : "Large Tip",
-      "type" : "consumable"
+      "type" : "Consumable"
     }
   ],
-  "autoRenewableSubscriptions" : [],
-  "nonRenewingSubscriptions" : [],
+  "settings" : {
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+
+  ],
   "version" : {
-    "major" : 2,
+    "major" : 4,
     "minor" : 0
   }
 }
