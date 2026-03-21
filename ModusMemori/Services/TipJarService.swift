@@ -1,16 +1,16 @@
 import StoreKit
-import SwiftUI
 
+@Observable
 @MainActor
-class TipJarService: ObservableObject {
+class TipJarService {
     static let productIDs = [
         "com.manicmutt.modusmemori.tip.small",
         "com.manicmutt.modusmemori.tip.medium",
         "com.manicmutt.modusmemori.tip.large"
     ]
 
-    @Published var products: [Product] = []
-    @Published var purchaseState: PurchaseState = .idle
+    var products: [Product] = []
+    var purchaseState: PurchaseState = .idle
 
     enum PurchaseState {
         case idle, purchasing, success, failed(Error)

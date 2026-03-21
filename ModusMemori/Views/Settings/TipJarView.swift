@@ -2,7 +2,7 @@ import StoreKit
 import SwiftUI
 
 struct TipJarView: View {
-    @StateObject private var store = TipJarService()
+    @State private var store = TipJarService()
     @Environment(\.dismiss) private var dismiss
 
     private let labels = [
