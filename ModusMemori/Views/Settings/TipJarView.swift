@@ -34,11 +34,22 @@ struct TipJarView: View {
                 Divider()
 
                 // Product list
-                if store.products.isEmpty {
+                switch store.loadingState {
+                case .loading:
                     ProgressView("Loading…")
                         .frame(maxWidth: .infinity)
                         .padding(48)
-                } else {
+                case .failed:
+                    VStack(spacing: 12) {
+                        Text("Couldn't load tips.")
+                            .foregroundStyle(.secondary)
+                        Button("Try Again") {
+                            Task { await store.loadProducts() }
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(48)
+                case .loaded:
                     VStack(spacing: 12) {
                         ForEach(store.products, id: \.id) { product in
                             TipRow(

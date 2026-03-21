@@ -11,9 +11,14 @@ class TipJarService {
 
     var products: [Product] = []
     var purchaseState: PurchaseState = .idle
+    var loadingState: LoadingState = .loading
 
     enum PurchaseState {
         case idle, purchasing, success, failed(Error)
+    }
+
+    enum LoadingState {
+        case loading, loaded, failed
     }
 
     init() {
@@ -21,11 +26,14 @@ class TipJarService {
     }
 
     func loadProducts() async {
+        loadingState = .loading
         do {
             let fetched = try await Product.products(for: Self.productIDs)
             products = fetched.sorted { $0.price < $1.price }
+            loadingState = fetched.isEmpty ? .failed : .loaded
         } catch {
             print("TipJarService: failed to load products: \(error)")
+            loadingState = .failed
         }
     }
 
