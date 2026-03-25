@@ -1,14 +1,19 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct StudySessionView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
+
     let deck: Deck
-    
+
     @StateObject private var sessionManager = StudySessionManager()
     @AppStorage("cardsPerSession") private var cardsPerSession: Int = 20
+    @AppStorage("newCardsPerDay") private var newCardsPerDay: Int = 20
+    @AppStorage("reviewOrder") private var reviewOrder: String = "random"
+    @AppStorage("showProgressDuringSession") private var showProgressDuringSession: Bool = true
+    @AppStorage("enableHaptics") private var enableHaptics: Bool = true
     @State private var sessionCardCount: Int = 20
     @State private var isFlipped = false
     @State private var showingHint = false
@@ -59,12 +64,12 @@ struct StudySessionView: View {
                     }
                 }
                 
-                if sessionManager.isSessionActive && sessionManager.studyMode != .matchGame {
+                if sessionManager.isSessionActive && sessionManager.studyMode != .matchGame && showProgressDuringSession {
                     ToolbarItem(placement: .principal) {
                         ProgressView(value: sessionManager.progress)
                             .frame(width: 120)
                     }
-                    
+
                     ToolbarItem(placement: .primaryAction) {
                         Text("\(sessionManager.cardsRemaining) left")
                             .font(.caption)
@@ -207,7 +212,7 @@ struct StudySessionView: View {
             Button {
                 sessionManager.setModelContext(modelContext)
                 let limit = studyMode == .matchGame ? min(matchCardCount, deck.cards.count) : sessionCardCount
-                sessionManager.startSession(deck: deck, cardLimit: limit, reversed: reverseCards, mode: studyMode)
+                sessionManager.startSession(deck: deck, cardLimit: limit, newCardsLimit: newCardsPerDay, reversed: reverseCards, mode: studyMode, reviewOrder: reviewOrder)
                 hasStarted = true
             } label: {
                 Label("Start Studying", systemImage: "play.fill")
@@ -235,13 +240,8 @@ struct StudySessionView: View {
     }
     
     private var matchGameView: some View {
-        MatchGameView(cards: sessionManager.cardQueue) { correctMatches, totalAttempts in
-            // Record results into the session
-            if let session = sessionManager.currentSession {
-                session.cardsStudied = correctMatches
-                session.correctCount = correctMatches
-            }
-            sessionManager.endSession()
+        MatchGameView(cards: sessionManager.cardQueue) { correctMatches, _ in
+            sessionManager.recordMatchGameReviews(correctCount: correctMatches, totalCount: correctMatches)
         }
     }
     
@@ -462,11 +462,11 @@ struct StudySessionView: View {
     }
     
     private func submitRating(_ rating: ReviewRating) {
-        // Reset state immediately (no animation) before moving to next card
+        if enableHaptics {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }
         isFlipped = false
         showingHint = false
-        
-        // Record the review (this advances to next card)
         sessionManager.recordReview(rating: rating)
     }
     
@@ -486,26 +486,6 @@ struct StudySessionView: View {
                 dismiss()
             }
             .buttonStyle(.borderedProminent)
-        }
-    }
-}
-
-struct RatingButton: View {
-    let rating: ReviewRating
-    let color: Color
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                Text(rating.displayName)
-                    .font(.headline)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(color)
-            .foregroundStyle(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
 }

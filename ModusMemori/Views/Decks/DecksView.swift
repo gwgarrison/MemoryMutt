@@ -11,6 +11,7 @@ struct DecksView: View {
     @State private var sortOrder: SortOrder = .recent
     @State private var viewMode: ViewMode = .grid
     @State private var showingStarterDecks = false
+    @State private var deckToEdit: Deck?
     
     enum SortOrder: String, CaseIterable {
         case recent = "Recent"
@@ -88,6 +89,9 @@ struct DecksView: View {
             }
             .sheet(isPresented: $showingNewDeck) {
                 DeckEditorView()
+            }
+            .sheet(item: $deckToEdit) { deck in
+                DeckEditorView(deck: deck)
             }
             .sheet(isPresented: $showingImportCSV) {
                 CSVImportView()
@@ -178,7 +182,7 @@ struct DecksView: View {
     @ViewBuilder
     private func deckContextMenu(deck: Deck) -> some View {
         Button {
-            // Edit deck
+            deckToEdit = deck
         } label: {
             Label("Edit", systemImage: "pencil")
         }

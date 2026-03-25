@@ -39,20 +39,32 @@ class StudySessionManager: ObservableObject {
     }
     
     /// Start a new study session for a deck
-    func startSession(deck: Deck, cardLimit: Int = 20, newCardsLimit: Int = 20, reviewLimit: Int = 100, reversed: Bool = false, mode: StudyMode = .flashcard) {
+    func startSession(deck: Deck, cardLimit: Int = 20, newCardsLimit: Int = 20, reviewLimit: Int = 100, reversed: Bool = false, mode: StudyMode = .flashcard, reviewOrder: String = "random") {
         self.isReversed = reversed
         self.studyMode = mode
         self.allDeckCards = deck.cards
         // Get cards by category
         let newCards = deck.cards.filter { $0.status == .new }
         let dueCards = deck.cards.filter { $0.isDue && $0.status != .new }
-        
+
         // Limit cards based on settings
         let selectedNewCards = Array(newCards.shuffled().prefix(newCardsLimit))
         let selectedReviewCards = Array(dueCards.shuffled().prefix(reviewLimit))
-        
-        // Combine and cap to the session card limit
-        var combined = (selectedNewCards + selectedReviewCards).shuffled()
+
+        // Combine and order based on review order preference
+        var combined: [Card]
+        switch reviewOrder {
+        case "oldest":
+            combined = (selectedNewCards + selectedReviewCards).sorted {
+                ($0.nextReviewDate ?? Date.distantPast) < ($1.nextReviewDate ?? Date.distantPast)
+            }
+        case "newest":
+            combined = (selectedNewCards + selectedReviewCards).sorted {
+                ($0.nextReviewDate ?? Date.distantPast) > ($1.nextReviewDate ?? Date.distantPast)
+            }
+        default:
+            combined = (selectedNewCards + selectedReviewCards).shuffled()
+        }
         
         // If we don't have enough due/new cards to fill the session,
         // include learning cards that aren't due yet so the user can still study
@@ -127,6 +139,24 @@ class StudySessionManager: ObservableObject {
         }
     }
     
+    /// Record reviews for all cards after completing a match game session.
+    /// All cards are marked correct since the user must successfully match every pair to finish.
+    func recordMatchGameReviews(correctCount: Int, totalCount: Int) {
+        guard let session = currentSession else { return }
+
+        for card in cardQueue {
+            let review = Review(rating: .correct, timeSpent: 0)
+            review.card = card
+            review.session = session
+            SM2Algorithm.applyReview(to: card, rating: .correct)
+            modelContext?.insert(review)
+        }
+
+        session.cardsStudied = totalCount
+        session.correctCount = correctCount
+        endSession()
+    }
+
     /// End the current session
     func endSession() {
         currentSession?.endTime = Date()
