@@ -247,8 +247,15 @@ struct StudySessionView: View {
     
     @ViewBuilder
     private func hangmanCardView(card: Card) -> some View {
-        let questionText = sessionManager.isReversed ? card.back : card.front
-        let answer = sessionManager.isReversed ? card.front : card.back
+        let rawQuestion = sessionManager.isReversed ? card.back : card.front
+        let rawAnswer = sessionManager.isReversed ? card.front : card.back
+
+        // If the answer is a number, use the name (question side) as the word to guess
+        // and the number as the clue
+        let isNumeric = rawAnswer.trimmingCharacters(in: .whitespacesAndNewlines)
+            .allSatisfy { $0.isNumber || $0 == "." || $0 == "," || $0 == " " }
+        let questionText = isNumeric ? rawAnswer : rawQuestion
+        let answer = isNumeric ? rawQuestion : rawAnswer
 
         HangmanView(questionText: questionText, answer: answer) { wasCorrect in
             sessionManager.recordReview(rating: wasCorrect ? .correct : .incorrect)
