@@ -1,11 +1,13 @@
 import SwiftUI
+import UIKit
 
 struct MultipleChoiceView: View {
     let questionText: String
     let choices: [String]
     let correctAnswer: String
     let onAnswer: (Bool) -> Void
-    
+
+    @AppStorage("enableHaptics") private var enableHaptics: Bool = true
     @State private var selectedAnswer: String?
     @State private var hasAnswered = false
     
@@ -82,6 +84,9 @@ struct MultipleChoiceView: View {
                     guard !hasAnswered else { return }
                     selectedAnswer = choice
                     hasAnswered = true
+                    if enableHaptics {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    }
                 } label: {
                     HStack {
                         Text(choice)

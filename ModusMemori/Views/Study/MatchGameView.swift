@@ -1,9 +1,11 @@
 import SwiftUI
+import UIKit
 
 struct MatchGameView: View {
     let cards: [Card]
     let onComplete: (Int, Int) -> Void // (correctMatches, totalAttempts)
-    
+
+    @AppStorage("enableHaptics") private var enableHaptics: Bool = true
     @State private var tiles: [MatchTile] = []
     @State private var selectedTile: MatchTile?
     @State private var matchedPairs: Set<UUID> = [] // card IDs that have been matched
@@ -148,12 +150,13 @@ struct MatchGameView: View {
             
             if first.cardID == tile.cardID && first.isQuestion != tile.isQuestion {
                 // Correct match
+                if enableHaptics { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
                 withAnimation(.easeInOut(duration: 0.3)) {
                     matchedPairs.insert(tile.cardID)
                     correctMatches += 1
                 }
                 selectedTile = nil
-                
+
                 // Check if all pairs matched
                 if matchedPairs.count == cards.count {
                     withAnimation(.easeInOut(duration: 0.5).delay(0.5)) {
@@ -162,6 +165,7 @@ struct MatchGameView: View {
                 }
             } else {
                 // Wrong match — flash red briefly then deselect
+                if enableHaptics { UINotificationFeedbackGenerator().notificationOccurred(.error) }
                 let wrongIDs: Set<String> = [first.id, tile.id]
                 withAnimation(.easeInOut(duration: 0.2)) {
                     incorrectPair = wrongIDs

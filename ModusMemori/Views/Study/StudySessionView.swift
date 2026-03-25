@@ -14,7 +14,20 @@ struct StudySessionView: View {
     @AppStorage("reviewOrder") private var reviewOrder: String = "random"
     @AppStorage("showProgressDuringSession") private var showProgressDuringSession: Bool = true
     @AppStorage("enableHaptics") private var enableHaptics: Bool = true
+    @AppStorage("dailyCardLimit") private var dailyCardLimit: Int = 100
     @State private var sessionCardCount: Int = 20
+
+    private var cardsStudiedToday: Int {
+        let startOfDay = Calendar.current.startOfDay(for: Date())
+        let descriptor = FetchDescriptor<StudySession>(
+            predicate: #Predicate { $0.startTime >= startOfDay }
+        )
+        return (try? modelContext.fetch(descriptor))?.reduce(0) { $0 + $1.cardsStudied } ?? 0
+    }
+
+    private var remainingCardsToday: Int {
+        max(0, dailyCardLimit - cardsStudiedToday)
+    }
     @State private var isFlipped = false
     @State private var showingHint = false
     @State private var cardStartTime = Date()
@@ -185,24 +198,34 @@ struct StudySessionView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                 } else {
                     // Cards per session stepper
-                    Stepper(value: $sessionCardCount, in: 5...200, step: 5) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "number")
-                                .font(.title3)
-                                .foregroundStyle(Color.accentColor)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Cards Per Session")
-                                    .font(.headline)
-                                Text("\(sessionCardCount) cards")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                    VStack(spacing: 4) {
+                        Stepper(value: $sessionCardCount, in: 5...200, step: 5) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "number")
+                                    .font(.title3)
+                                    .foregroundStyle(Color.accentColor)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Cards Per Session")
+                                        .font(.headline)
+                                    Text("\(min(sessionCardCount, remainingCardsToday)) cards")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
                         }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                        if remainingCardsToday < sessionCardCount {
+                            Text("\(remainingCardsToday) cards remaining in today's limit of \(dailyCardLimit)")
+                                .font(.caption)
+                                .foregroundStyle(.orange)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 4)
+                        }
                     }
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
             }
             .padding(.horizontal, 20)
@@ -211,7 +234,8 @@ struct StudySessionView: View {
             
             Button {
                 sessionManager.setModelContext(modelContext)
-                let limit = studyMode == .matchGame ? min(matchCardCount, deck.cards.count) : sessionCardCount
+                let requestedLimit = studyMode == .matchGame ? min(matchCardCount, deck.cards.count) : sessionCardCount
+                let limit = studyMode == .matchGame ? requestedLimit : min(requestedLimit, remainingCardsToday)
                 sessionManager.startSession(deck: deck, cardLimit: limit, newCardsLimit: newCardsPerDay, reversed: reverseCards, mode: studyMode, reviewOrder: reviewOrder)
                 hasStarted = true
             } label: {
@@ -219,10 +243,11 @@ struct StudySessionView: View {
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.accentColor)
+                    .background(studyMode != .matchGame && remainingCardsToday == 0 ? Color.secondary : Color.accentColor)
                     .foregroundStyle(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 14))
             }
+            .disabled(studyMode != .matchGame && remainingCardsToday == 0)
             .padding(.horizontal, 20)
             .padding(.bottom, 30)
         }

@@ -1,10 +1,12 @@
 import SwiftUI
+import UIKit
 
 struct HangmanView: View {
     let questionText: String
     let answer: String
     let onResult: (Bool) -> Void
 
+    @AppStorage("enableHaptics") private var enableHaptics: Bool = true
     @State private var guessedLetters: Set<Character> = []
     @State private var gameOver = false
 
@@ -143,6 +145,9 @@ struct HangmanView: View {
                     ForEach(keyboardRows[row], id: \.self) { letter in
                         Button {
                             guessedLetters.insert(letter)
+                            if enableHaptics {
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            }
                         } label: {
                             Text(String(letter))
                                 .font(.system(size: 15, weight: .semibold))
