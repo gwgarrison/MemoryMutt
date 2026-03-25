@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct SettingsView: View {
     @State private var showingTipJar = false
@@ -128,45 +129,6 @@ struct SettingsView: View {
     }
 }
 
-struct ExportView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Deck.name) private var decks: [Deck]
-
-    var body: some View {
-        Group {
-            if decks.isEmpty {
-                ContentUnavailableView("No Decks", systemImage: "rectangle.stack")
-            } else {
-                List(decks) { deck in
-                    HStack(spacing: 12) {
-                        Image(systemName: deck.icon)
-                            .foregroundStyle(Color(deck.color))
-                            .frame(width: 28)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(deck.name)
-                            Text("\(deck.cardsCount) cards")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        ShareLink(item: exportCSV(for: deck), subject: Text(deck.name)) {
-                            Image(systemName: "square.and.arrow.up")
-                                .foregroundStyle(.accentColor)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .padding(.vertical, 2)
-                }
-            }
-        }
-        .navigationTitle("Export Data")
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-    private func exportCSV(for deck: Deck) -> String {
-        CSVImportService(modelContext: modelContext).exportCSV(deck: deck)
-    }
-}
 
 struct ImportView: View {
     @State private var showingCSVImport = false
