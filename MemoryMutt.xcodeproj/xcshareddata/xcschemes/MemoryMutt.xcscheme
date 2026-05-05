@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "16BFA21C2F45531E00448DD8"
-               BuildableName = "ModusMemori.app"
-               BlueprintName = "ModusMemori"
-               ReferencedContainer = "container:ModusMemori.xcodeproj">
+               BuildableName = "MemoryMutt.app"
+               BlueprintName = "MemoryMutt"
+               ReferencedContainer = "container:MemoryMutt.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,13 +45,13 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "16BFA21C2F45531E00448DD8"
-            BuildableName = "ModusMemori.app"
-            BlueprintName = "ModusMemori"
-            ReferencedContainer = "container:ModusMemori.xcodeproj">
+            BuildableName = "MemoryMutt.app"
+            BlueprintName = "MemoryMutt"
+            ReferencedContainer = "container:MemoryMutt.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../ModusMemori/Tips.storekit">
+         identifier = "../../MemoryMutt/Tips.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
@@ -65,9 +65,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "16BFA21C2F45531E00448DD8"
-            BuildableName = "ModusMemori.app"
-            BlueprintName = "ModusMemori"
-            ReferencedContainer = "container:ModusMemori.xcodeproj">
+            BuildableName = "MemoryMutt.app"
+            BlueprintName = "MemoryMutt"
+            ReferencedContainer = "container:MemoryMutt.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

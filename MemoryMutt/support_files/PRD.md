@@ -1,6 +1,6 @@
-# ModusMemori PRD
+# MemoryMutt PRD
 
-ModusMemori is a mobile flash card application designed to help users learn and memorize information efficiently through spaced repetition and interactive study sessions. The app targets students, language learners, and professionals who need to retain large amounts of information.
+MemoryMutt is a mobile flash card application designed to help users learn and memorize information efficiently through spaced repetition and interactive study sessions. The app targets students, language learners, and professionals who need to retain large amounts of information.
 
 ---
 

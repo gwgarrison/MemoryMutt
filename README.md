@@ -1,4 +1,4 @@
-# ModusMemori
+# MemoryMutt
 
 A flashcard app for iOS that uses spaced repetition to help you learn and memorize information efficiently.
 
@@ -119,8 +119,8 @@ Cards progress through these stages based on your reviews:
 ## Project Structure
 
 ```
-ModusMemori/
-├── ModusMemoriApp.swift       # App entry point
+MemoryMutt/
+├── MemoryMuttApp.swift       # App entry point
 ├── Models/                    # SwiftData models
 │   ├── Deck.swift
 │   ├── Card.swift

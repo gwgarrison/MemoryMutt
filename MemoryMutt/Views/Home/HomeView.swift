@@ -42,7 +42,7 @@ struct HomeView: View {
                 }
                 .padding()
             }
-            .navigationTitle("ModusMemori")
+            .navigationTitle("MemoryMutt")
         }
     }
     

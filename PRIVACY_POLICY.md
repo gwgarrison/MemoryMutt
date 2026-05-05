@@ -1,4 +1,4 @@
-# ModusMemori Privacy Policy
+# MemoryMutt Privacy Policy
 
 **Effective Date:** [INSERT DATE BEFORE PUBLISHING]
 **Last Updated:** [INSERT DATE BEFORE PUBLISHING]
@@ -7,11 +7,11 @@
 
 ## Privacy Policy
 
-ModusMemori ("the App") is a flashcard and spaced-repetition study tool. This Privacy Policy explains how the App handles your information.
+MemoryMutt ("the App") is a flashcard and spaced-repetition study tool. This Privacy Policy explains how the App handles your information.
 
 ### Summary
 
-**ModusMemori does not collect, transmit, or share any personal data.** All data you create in the App lives exclusively on your device.
+**MemoryMutt does not collect, transmit, or share any personal data.** All data you create in the App lives exclusively on your device.
 
 ---
 
@@ -79,7 +79,7 @@ In this file, replace:
 
 ## Step 2: Add a PrivacyPolicyView to the app
 
-Create a new file at `ModusMemori/Views/Settings/PrivacyPolicyView.swift`:
+Create a new file at `MemoryMutt/Views/Settings/PrivacyPolicyView.swift`:
 
 ```swift
 import SwiftUI
@@ -95,7 +95,7 @@ struct PrivacyPolicyView: View {
 
                     Text("Summary")
                         .font(.headline)
-                    Text("ModusMemori does not collect, transmit, or share any personal data. All data you create in the App lives exclusively on your device.")
+                    Text("MemoryMutt does not collect, transmit, or share any personal data. All data you create in the App lives exclusively on your device.")
 
                     Text("Data Stored on Your Device")
                         .font(.headline)
@@ -140,7 +140,7 @@ struct PrivacyPolicyView: View {
 
 ## Step 3: Update SettingsView to navigate to PrivacyPolicyView
 
-In `ModusMemori/Views/Settings/SettingsView.swift`, replace the existing Privacy Policy `Link` (around line 85) with a `NavigationLink`:
+In `MemoryMutt/Views/Settings/SettingsView.swift`, replace the existing Privacy Policy `Link` (around line 85) with a `NavigationLink`:
 
 **Remove this:**
 ```swift

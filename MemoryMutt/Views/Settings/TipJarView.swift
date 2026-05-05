@@ -20,10 +20,10 @@ struct TipJarView: View {
                         .font(.system(size: 48))
                         .foregroundStyle(.pink)
 
-                    Text("Support ModusMemori")
+                    Text("Support MemoryMutt")
                         .font(.title2.bold())
 
-                    Text("ModusMemori is free with no ads or subscriptions. If it's helped your studies, a tip means a lot!")
+                    Text("MemoryMutt is free with no ads or subscriptions. If it's helped your studies, a tip means a lot!")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -163,7 +163,7 @@ private struct ThankYouView: View {
             Text("Thank You!")
                 .font(.largeTitle.bold())
 
-            Text("Your support helps keep ModusMemori free and growing. Happy studying!")
+            Text("Your support helps keep MemoryMutt free and growing. Happy studying!")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

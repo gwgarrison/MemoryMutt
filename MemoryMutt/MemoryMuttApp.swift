@@ -1,6 +1,6 @@
 //
-//  ModusMemoriApp.swift
-//  ModusMemori
+//  MemoryMuttApp.swift
+//  MemoryMutt
 //
 //  Created by Gary Garrison on 2/17/26.
 //
@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct ModusMemoriApp: App {
+struct MemoryMuttApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Deck.self,

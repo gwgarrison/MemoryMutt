@@ -6,26 +6,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Open in Xcode:
 ```bash
-open ModusMemori.xcodeproj
+open MemoryMutt.xcodeproj
 ```
 
 Or build from command line:
 ```bash
-xcodebuild -scheme ModusMemori -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -scheme MemoryMutt -destination 'platform=iOS Simulator,name=iPhone 16' build
 ```
 
 Run tests:
 ```bash
-xcodebuild -scheme ModusMemori -destination 'platform=iOS Simulator,name=iPhone 16' test
+xcodebuild -scheme MemoryMutt -destination 'platform=iOS Simulator,name=iPhone 16' test
 ```
 
 **Requirements:** macOS with Xcode 15+, iOS 17.0+ simulator or device.
 
 ## Architecture
 
-ModusMemori is a SwiftUI + SwiftData spaced-repetition flashcard app with no external dependencies.
+MemoryMutt is a SwiftUI + SwiftData spaced-repetition flashcard app with no external dependencies.
 
-### Data Models (`/ModusMemori/Models/`)
+### Data Models (`/MemoryMutt/Models/`)
 
 Four SwiftData `@Model` classes with a strict hierarchy:
 
@@ -39,9 +39,9 @@ Deck → StudySession → Review
 - **StudySession**: Aggregate metrics for one study session. Has a `StudyMode` enum (`flashcard`, `multipleChoice`, `matchGame`).
 - **Review**: Atomic record per card rating. Uses `ReviewRating` (`incorrect` = quality 0, `correct` = quality 4).
 
-The SwiftData schema is configured in `ModusMemoriApp.swift` with cascade deletes throughout.
+The SwiftData schema is configured in `MemoryMuttApp.swift` with cascade deletes throughout.
 
-### Services (`/ModusMemori/Services/`)
+### Services (`/MemoryMutt/Services/`)
 
 - **SM2Algorithm.swift**: Stateless SM-2 implementation. `calculateNextReview()` returns updated easeFactor, interval, nextReviewDate, and status. Min ease factor 1.3, default 2.5. Thresholds: learning <21 days, review <60 days, mastered ≥60 days.
 - **StudySessionManager.swift**: `ObservableObject` that owns the active session. Manages card queue, current index, and mode. `startSession()` filters cards by new/review limits; `recordReview()` applies SM2 and persists a `Review` record; `generateChoices()` pulls 3 random distractors from the deck for multiple-choice.
@@ -49,7 +49,7 @@ The SwiftData schema is configured in `ModusMemoriApp.swift` with cascade delete
 - **CSVImportService.swift**: Auto-detects delimiter (comma, semicolon, tab, pipe), handles quoted/escaped fields, supports UTF-8 and ISO Latin-1. Uses security-scoped resource access.
 - **StarterDeckService.swift**: Loads bundled CSV files from the app bundle. Starter decks: World Capitals (249), US States (50), US Presidents (47), Spanish (500), French (497).
 
-### Views (`/ModusMemori/Views/`)
+### Views (`/MemoryMutt/Views/`)
 
 Navigation is a `TabView` in `MainTabView.swift` with 5 tabs: Home, Decks, Study, Statistics, Settings.
 

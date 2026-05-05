@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		16BFA21D2F45531E00448DD8 /* ModusMemori.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ModusMemori.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		16BFA21D2F45531E00448DD8 /* MemoryMutt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MemoryMutt.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		16BFA21F2F45531E00448DD8 /* ModusMemori */ = {
+		16BFA21F2F45531E00448DD8 /* MemoryMutt */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ModusMemori;
+			path = MemoryMutt;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		16BFA2142F45531E00448DD8 = {
 			isa = PBXGroup;
 			children = (
-				16BFA21F2F45531E00448DD8 /* ModusMemori */,
+				16BFA21F2F45531E00448DD8 /* MemoryMutt */,
 				16BFA21E2F45531E00448DD8 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +40,7 @@
 		16BFA21E2F45531E00448DD8 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				16BFA21D2F45531E00448DD8 /* ModusMemori.app */,
+				16BFA21D2F45531E00448DD8 /* MemoryMutt.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +48,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		16BFA21C2F45531E00448DD8 /* ModusMemori */ = {
+		16BFA21C2F45531E00448DD8 /* MemoryMutt */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 16BFA22A2F45531F00448DD8 /* Build configuration list for PBXNativeTarget "ModusMemori" */;
+			buildConfigurationList = 16BFA22A2F45531F00448DD8 /* Build configuration list for PBXNativeTarget "MemoryMutt" */;
 			buildPhases = (
 				16BFA2192F45531E00448DD8 /* Sources */,
 				16BFA21A2F45531E00448DD8 /* Frameworks */,
@@ -61,13 +61,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				16BFA21F2F45531E00448DD8 /* ModusMemori */,
+				16BFA21F2F45531E00448DD8 /* MemoryMutt */,
 			);
-			name = ModusMemori;
+			name = MemoryMutt;
 			packageProductDependencies = (
 			);
-			productName = ModusMemori;
-			productReference = 16BFA21D2F45531E00448DD8 /* ModusMemori.app */;
+			productName = MemoryMutt;
+			productReference = 16BFA21D2F45531E00448DD8 /* MemoryMutt.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -85,7 +85,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 16BFA2182F45531E00448DD8 /* Build configuration list for PBXProject "ModusMemori" */;
+			buildConfigurationList = 16BFA2182F45531E00448DD8 /* Build configuration list for PBXProject "MemoryMutt" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -99,7 +99,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				16BFA21C2F45531E00448DD8 /* ModusMemori */,
+				16BFA21C2F45531E00448DD8 /* MemoryMutt */,
 			);
 		};
 /* End PBXProject section */
@@ -267,7 +267,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.18;
-				PRODUCT_BUNDLE_IDENTIFIER = com.manicmutt.ModusMemori;
+				PRODUCT_BUNDLE_IDENTIFIER = com.manicmutt.MemoryMutt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -300,7 +300,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.18;
-				PRODUCT_BUNDLE_IDENTIFIER = com.manicmutt.ModusMemori;
+				PRODUCT_BUNDLE_IDENTIFIER = com.manicmutt.MemoryMutt;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -315,7 +315,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		16BFA2182F45531E00448DD8 /* Build configuration list for PBXProject "ModusMemori" */ = {
+		16BFA2182F45531E00448DD8 /* Build configuration list for PBXProject "MemoryMutt" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				16BFA2282F45531F00448DD8 /* Debug */,
@@ -324,7 +324,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		16BFA22A2F45531F00448DD8 /* Build configuration list for PBXNativeTarget "ModusMemori" */ = {
+		16BFA22A2F45531F00448DD8 /* Build configuration list for PBXNativeTarget "MemoryMutt" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				16BFA22B2F45531F00448DD8 /* Debug */,

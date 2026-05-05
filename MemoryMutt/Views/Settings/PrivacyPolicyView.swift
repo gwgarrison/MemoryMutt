@@ -8,7 +8,7 @@ struct PrivacyPolicyView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
-                Text("ModusMemori does not collect, transmit, or share any personal data. All data you create in the App lives exclusively on your device.")
+                Text("MemoryMutt does not collect, transmit, or share any personal data. All data you create in the App lives exclusively on your device.")
                     .padding()
                     .background(Color.secondary.opacity(0.15))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
