@@ -119,8 +119,8 @@ class StudySessionManager: ObservableObject {
 
         if mode == .speedRound { startBlitzTimer() }
 
-        // Generate choices for the first card if in multiple choice mode
-        if mode == .multipleChoice {
+        // Generate choices for multiple choice and speed round modes
+        if mode == .multipleChoice || mode == .speedRound {
             generateChoices()
         }
     }
@@ -168,7 +168,7 @@ class StudySessionManager: ObservableObject {
         // Check if session is complete
         if currentCardIndex >= cardQueue.count {
             endSession()
-        } else if studyMode == .multipleChoice {
+        } else if studyMode == .multipleChoice || studyMode == .speedRound {
             generateChoices()
         }
     }
