@@ -15,6 +15,7 @@ class StudySessionManager: ObservableObject {
     
     private var modelContext: ModelContext?
     private var allDeckCards: [Card] = []
+    private var requeuedCounts: [UUID: Int] = [:]
     
     var currentCard: Card? {
         guard currentCardIndex < cardQueue.count else { return nil }
@@ -78,6 +79,7 @@ class StudySessionManager: ObservableObject {
         
         cardQueue = Array(combined.prefix(cardLimit))
         currentCardIndex = 0
+        requeuedCounts = [:]
         cardStartTime = Date()
         
         // Create session
@@ -130,7 +132,16 @@ class StudySessionManager: ObservableObject {
         // Move to next card
         currentCardIndex += 1
         cardStartTime = Date()
-        
+
+        // Re-queue incorrect cards for immediate retry (up to 2 times)
+        if rating == .incorrect {
+            let count = requeuedCounts[card.id, default: 0]
+            if count < 2 {
+                cardQueue.append(card)
+                requeuedCounts[card.id] = count + 1
+            }
+        }
+
         // Check if session is complete
         if currentCardIndex >= cardQueue.count {
             endSession()
@@ -205,5 +216,6 @@ class StudySessionManager: ObservableObject {
         isSessionActive = false
         currentChoices = []
         allDeckCards = []
+        requeuedCounts = [:]
     }
 }

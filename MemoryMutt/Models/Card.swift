@@ -47,6 +47,13 @@ final class Card {
     var isDue: Bool {
         nextReviewDate <= Date()
     }
+
+    var correctCount: Int { reviews.filter { $0.rating == .correct }.count }
+    var incorrectCount: Int { reviews.filter { $0.rating == .incorrect }.count }
+    var accuracy: Double {
+        guard !reviews.isEmpty else { return 0 }
+        return Double(correctCount) / Double(reviews.count) * 100
+    }
     
     init(
         id: UUID = UUID(),

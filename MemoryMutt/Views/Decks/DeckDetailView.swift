@@ -1,25 +1,44 @@
 import SwiftUI
 import SwiftData
 
+enum CardSortOrder: String, CaseIterable {
+    case recent = "Recent"
+    case difficulty = "Difficulty"
+}
+
 struct DeckDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
+
     @Bindable var deck: Deck
-    
+
     @State private var showingAddCard = false
     @State private var showingEditDeck = false
     @State private var showingStudySession = false
     @State private var showingDeleteAlert = false
     @State private var searchText = ""
-    
+    @State private var sortOrder: CardSortOrder = .recent
+
     private var filteredCards: [Card] {
+        let base: [Card]
         if searchText.isEmpty {
-            return deck.cards.sorted { $0.createdAt > $1.createdAt }
+            base = deck.cards
+        } else {
+            base = deck.cards.filter {
+                $0.front.localizedCaseInsensitiveContains(searchText) ||
+                $0.back.localizedCaseInsensitiveContains(searchText)
+            }
         }
-        return deck.cards.filter {
-            $0.front.localizedCaseInsensitiveContains(searchText) ||
-            $0.back.localizedCaseInsensitiveContains(searchText)
+        switch sortOrder {
+        case .recent:
+            return base.sorted { $0.createdAt > $1.createdAt }
+        case .difficulty:
+            return base.sorted { lhs, rhs in
+                if lhs.reviews.isEmpty && rhs.reviews.isEmpty { return lhs.createdAt > rhs.createdAt }
+                if lhs.reviews.isEmpty { return false }
+                if rhs.reviews.isEmpty { return true }
+                return lhs.accuracy < rhs.accuracy
+            }
         }
     }
     
@@ -103,9 +122,25 @@ struct DeckDetailView: View {
                     } label: {
                         Label("Edit Deck", systemImage: "pencil")
                     }
-                    
+
                     Divider()
-                    
+
+                    Menu("Sort By") {
+                        ForEach(CardSortOrder.allCases, id: \.self) { order in
+                            Button {
+                                sortOrder = order
+                            } label: {
+                                if sortOrder == order {
+                                    Label(order.rawValue, systemImage: "checkmark")
+                                } else {
+                                    Text(order.rawValue)
+                                }
+                            }
+                        }
+                    }
+
+                    Divider()
+
                     Button(role: .destructive) {
                         showingDeleteAlert = true
                     } label: {
@@ -194,7 +229,7 @@ struct CardRow: View {
             
             HStack {
                 StatusBadge(status: card.status)
-                
+
                 if card.isDue {
                     Text("Due")
                         .font(.caption2)
@@ -203,6 +238,18 @@ struct CardRow: View {
                         .padding(.vertical, 2)
                         .background(Color.orange.opacity(0.2))
                         .foregroundStyle(.orange)
+                        .clipShape(Capsule())
+                }
+
+                if !card.reviews.isEmpty && card.accuracy < 70 {
+                    let isHard = card.accuracy < 50
+                    Text(isHard ? "Hard" : "Tricky")
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background((isHard ? Color.red : Color.yellow).opacity(0.2))
+                        .foregroundStyle(isHard ? .red : .yellow)
                         .clipShape(Capsule())
                 }
             }

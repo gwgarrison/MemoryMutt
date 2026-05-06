@@ -52,6 +52,9 @@ struct CardEditorView: View {
                         LabeledContent("Interval", value: "\(card.interval) days")
                         LabeledContent("Next Review", value: card.nextReviewDate.formatted(date: .abbreviated, time: .omitted))
                         LabeledContent("Reviews", value: "\(card.reviews.count)")
+                        if !card.reviews.isEmpty {
+                            LabeledContent("Accuracy", value: "\(Int(card.accuracy))% (\(card.correctCount)✓ \(card.incorrectCount)✗)")
+                        }
                     }
                     
                     Section {
