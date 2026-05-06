@@ -12,10 +12,15 @@ class StudySessionManager: ObservableObject {
     @Published var isReversed: Bool = false
     @Published var studyMode: StudyMode = .flashcard
     @Published var currentChoices: [String] = []
-    
+    @Published var timeRemaining: Int = 60
+    @Published var isBlitzMode: Bool = false
+
     private var modelContext: ModelContext?
     private var allDeckCards: [Card] = []
     private var requeuedCounts: [UUID: Int] = [:]
+    private var blitzTimerTask: Task<Void, Never>?
+    private var currentDeckId: UUID?
+    private let blitzDuration = 60
     
     var currentCard: Card? {
         guard currentCardIndex < cardQueue.count else { return nil }
@@ -37,6 +42,19 @@ class StudySessionManager: ObservableObject {
     
     func setModelContext(_ context: ModelContext) {
         self.modelContext = context
+    }
+
+    private func startBlitzTimer() {
+        blitzTimerTask?.cancel()
+        timeRemaining = blitzDuration
+        blitzTimerTask = Task {
+            while !Task.isCancelled && timeRemaining > 0 {
+                try? await Task.sleep(for: .seconds(1))
+                guard !Task.isCancelled else { break }
+                timeRemaining -= 1
+                if timeRemaining == 0 { endSession() }
+            }
+        }
     }
     
     /// Start a new study session for a deck
@@ -81,7 +99,10 @@ class StudySessionManager: ObservableObject {
         currentCardIndex = 0
         requeuedCounts = [:]
         cardStartTime = Date()
-        
+
+        isBlitzMode = mode == .speedRound
+        currentDeckId = deck.id
+
         // Create session
         let actualNewCount = cardQueue.filter { $0.status == .new }.count
         let actualReviewCount = cardQueue.count - actualNewCount
@@ -95,7 +116,9 @@ class StudySessionManager: ObservableObject {
         
         // Insert session into context
         modelContext?.insert(session)
-        
+
+        if mode == .speedRound { startBlitzTimer() }
+
         // Generate choices for the first card if in multiple choice mode
         if mode == .multipleChoice {
             generateChoices()
@@ -170,9 +193,20 @@ class StudySessionManager: ObservableObject {
 
     /// End the current session
     func endSession() {
+        blitzTimerTask?.cancel()
+        blitzTimerTask = nil
+
+        if isBlitzMode, let deckId = currentDeckId, let session = currentSession {
+            let key = "speedRoundBestScore_\(deckId.uuidString)"
+            let prev = UserDefaults.standard.integer(forKey: key)
+            if session.correctCount > prev {
+                UserDefaults.standard.set(session.correctCount, forKey: key)
+            }
+        }
+
         currentSession?.endTime = Date()
         isSessionActive = false
-        
+
         // Save changes
         try? modelContext?.save()
     }
@@ -210,6 +244,8 @@ class StudySessionManager: ObservableObject {
     
     /// Reset session state
     func reset() {
+        blitzTimerTask?.cancel()
+        blitzTimerTask = nil
         currentSession = nil
         cardQueue = []
         currentCardIndex = 0
@@ -217,5 +253,8 @@ class StudySessionManager: ObservableObject {
         currentChoices = []
         allDeckCards = []
         requeuedCounts = [:]
+        timeRemaining = blitzDuration
+        isBlitzMode = false
+        currentDeckId = nil
     }
 }

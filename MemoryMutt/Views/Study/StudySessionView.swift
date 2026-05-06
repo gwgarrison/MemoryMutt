@@ -48,7 +48,12 @@ struct StudySessionView: View {
                     if sessionManager.studyMode == .matchGame {
                         matchGameView
                     } else if let card = sessionManager.currentCard {
-                        if sessionManager.studyMode == .multipleChoice {
+                        if sessionManager.studyMode == .speedRound {
+                            SpeedRoundView(sessionManager: sessionManager, card: card, enableHaptics: enableHaptics) { rating in
+                                sessionManager.recordReview(rating: rating)
+                            }
+                            .id(card.id)
+                        } else if sessionManager.studyMode == .multipleChoice {
                             multipleChoiceCardView(card: card)
                         } else if sessionManager.studyMode == .hangman {
                             hangmanCardView(card: card)
@@ -77,7 +82,7 @@ struct StudySessionView: View {
                     }
                 }
                 
-                if sessionManager.isSessionActive && sessionManager.studyMode != .matchGame && showProgressDuringSession {
+                if sessionManager.isSessionActive && sessionManager.studyMode != .matchGame && sessionManager.studyMode != .speedRound && showProgressDuringSession {
                     ToolbarItem(placement: .principal) {
                         ProgressView(value: sessionManager.progress)
                             .frame(width: 120)
@@ -235,7 +240,7 @@ struct StudySessionView: View {
             Button {
                 sessionManager.setModelContext(modelContext)
                 let requestedLimit = studyMode == .matchGame ? min(matchCardCount, deck.cards.count) : sessionCardCount
-                let limit = studyMode == .matchGame ? requestedLimit : min(requestedLimit, remainingCardsToday)
+                let limit = (studyMode == .matchGame || studyMode == .speedRound) ? requestedLimit : min(requestedLimit, remainingCardsToday)
                 sessionManager.startSession(deck: deck, cardLimit: limit, newCardsLimit: newCardsPerDay, reversed: reverseCards, mode: studyMode, reviewOrder: reviewOrder)
                 hasStarted = true
             } label: {
@@ -243,11 +248,11 @@ struct StudySessionView: View {
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(studyMode != .matchGame && remainingCardsToday == 0 ? Color.secondary : Color.accentColor)
+                    .background(studyMode != .matchGame && studyMode != .speedRound && remainingCardsToday == 0 ? Color.secondary : Color.accentColor)
                     .foregroundStyle(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 14))
             }
-            .disabled(studyMode != .matchGame && remainingCardsToday == 0)
+            .disabled(studyMode != .matchGame && studyMode != .speedRound && remainingCardsToday == 0)
             .padding(.horizontal, 20)
             .padding(.bottom, 30)
         }
@@ -261,6 +266,7 @@ struct StudySessionView: View {
         case .multipleChoice: return "Pick from 4 answer choices"
         case .matchGame: return "Match questions to answers"
         case .hangman: return "Guess the answer letter by letter"
+        case .speedRound: return "60 seconds, answer as many as you can"
         }
     }
     
@@ -496,9 +502,15 @@ struct StudySessionView: View {
     }
     
     private var completionView: some View {
-        StudyCompletionView(session: sessionManager.currentSession) {
-            dismiss()
-        }
+        let bestScore: Int? = sessionManager.isBlitzMode
+            ? UserDefaults.standard.integer(forKey: "speedRoundBestScore_\(deck.id.uuidString)")
+            : nil
+        return StudyCompletionView(
+            session: sessionManager.currentSession,
+            onDismiss: { dismiss() },
+            isSpeedRound: sessionManager.isBlitzMode,
+            bestScore: bestScore
+        )
     }
     
     private var noCardsView: some View {

@@ -6,6 +6,7 @@ enum StudyMode: String, Codable, CaseIterable {
     case multipleChoice = "multipleChoice"
     case matchGame = "matchGame"
     case hangman = "hangman"
+    case speedRound = "speedRound"
 
     var displayName: String {
         switch self {
@@ -13,6 +14,7 @@ enum StudyMode: String, Codable, CaseIterable {
         case .multipleChoice: return "Multiple Choice"
         case .matchGame: return "Match Game"
         case .hangman: return "Hangman"
+        case .speedRound: return "Speed Round"
         }
     }
 
@@ -22,6 +24,7 @@ enum StudyMode: String, Codable, CaseIterable {
         case .multipleChoice: return "list.bullet.circle"
         case .matchGame: return "square.grid.2x2"
         case .hangman: return "figure.stand"
+        case .speedRound: return "bolt.fill"
         }
     }
 }

@@ -3,49 +3,92 @@ import SwiftUI
 struct StudyCompletionView: View {
     let session: StudySession?
     let onDismiss: () -> Void
-    
+    var isSpeedRound: Bool = false
+    var bestScore: Int? = nil
+
     var body: some View {
         VStack(spacing: 30) {
             Spacer()
-            
-            // Celebration Icon
-            Image(systemName: "checkmark.circle.fill")
+
+            Image(systemName: isSpeedRound ? "bolt.circle.fill" : "checkmark.circle.fill")
                 .font(.system(size: 80))
-                .foregroundStyle(.green)
-            
-            Text("Session Complete!")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-            
+                .foregroundStyle(isSpeedRound ? .yellow : .green)
+
+            VStack(spacing: 6) {
+                Text(isSpeedRound ? "Speed Round Complete!" : "Session Complete!")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+
+                if isSpeedRound, let session, let best = bestScore, session.correctCount >= best {
+                    Text("New Best!")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(Color.yellow)
+                        .clipShape(Capsule())
+                }
+            }
+
             if let session = session {
-                // Stats
                 VStack(spacing: 20) {
-                    HStack(spacing: 40) {
-                        CompletionStat(
-                            value: "\(session.cardsStudied)",
-                            label: "Cards Studied",
-                            icon: "rectangle.stack.fill"
-                        )
-                        
-                        CompletionStat(
-                            value: String(format: "%.0f%%", session.accuracy),
-                            label: "Accuracy",
-                            icon: "target"
-                        )
-                    }
-                    
-                    HStack(spacing: 40) {
-                        CompletionStat(
-                            value: session.durationFormatted,
-                            label: "Time Spent",
-                            icon: "clock.fill"
-                        )
-                        
-                        CompletionStat(
-                            value: "\(session.cardsNew)",
-                            label: "New Cards",
-                            icon: "sparkles"
-                        )
+                    if isSpeedRound {
+                        HStack(spacing: 40) {
+                            CompletionStat(
+                                value: "\(session.correctCount)",
+                                label: "Score",
+                                icon: "bolt.fill"
+                            )
+
+                            CompletionStat(
+                                value: bestScore.map { "\($0)" } ?? "—",
+                                label: "Best",
+                                icon: "trophy.fill"
+                            )
+                        }
+
+                        HStack(spacing: 40) {
+                            CompletionStat(
+                                value: session.durationFormatted,
+                                label: "Time",
+                                icon: "clock.fill"
+                            )
+
+                            CompletionStat(
+                                value: "\(session.cardsStudied)",
+                                label: "Attempted",
+                                icon: "rectangle.stack.fill"
+                            )
+                        }
+                    } else {
+                        HStack(spacing: 40) {
+                            CompletionStat(
+                                value: "\(session.cardsStudied)",
+                                label: "Cards Studied",
+                                icon: "rectangle.stack.fill"
+                            )
+
+                            CompletionStat(
+                                value: String(format: "%.0f%%", session.accuracy),
+                                label: "Accuracy",
+                                icon: "target"
+                            )
+                        }
+
+                        HStack(spacing: 40) {
+                            CompletionStat(
+                                value: session.durationFormatted,
+                                label: "Time Spent",
+                                icon: "clock.fill"
+                            )
+
+                            CompletionStat(
+                                value: "\(session.cardsNew)",
+                                label: "New Cards",
+                                icon: "sparkles"
+                            )
+                        }
                     }
                 }
                 .padding()
@@ -53,16 +96,15 @@ struct StudyCompletionView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .padding(.horizontal)
             }
-            
-            // Motivational message
+
             Text(motivationalMessage)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-            
+
             Spacer()
-            
+
             Button {
                 onDismiss()
             } label: {
@@ -78,21 +120,21 @@ struct StudyCompletionView: View {
             .padding(.bottom, 30)
         }
     }
-    
+
     private var motivationalMessage: String {
-        guard let session = session else {
-            return "Keep up the great work!"
+        guard let session else { return "Keep up the great work!" }
+
+        if isSpeedRound {
+            if session.correctCount >= 20 { return "Lightning fast! You're on fire! ⚡️" }
+            if session.correctCount >= 12 { return "Great speed! Keep pushing! 🚀" }
+            if session.correctCount >= 6 { return "Good effort! Speed comes with practice! 💪" }
+            return "Keep going — every round builds faster recall! 🎯"
         }
-        
-        if session.accuracy >= 90 {
-            return "Excellent! You're mastering this material! 🌟"
-        } else if session.accuracy >= 70 {
-            return "Great job! Keep practicing to improve even more! 💪"
-        } else if session.accuracy >= 50 {
-            return "Good effort! Regular practice makes perfect! 📚"
-        } else {
-            return "Don't give up! Each review helps you learn! 🎯"
-        }
+
+        if session.accuracy >= 90 { return "Excellent! You're mastering this material! 🌟" }
+        if session.accuracy >= 70 { return "Great job! Keep practicing to improve even more! 💪" }
+        if session.accuracy >= 50 { return "Good effort! Regular practice makes perfect! 📚" }
+        return "Don't give up! Each review helps you learn! 🎯"
     }
 }
 
