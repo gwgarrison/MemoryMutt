@@ -65,10 +65,16 @@ struct MultipleChoiceView: View {
             
             Spacer()
             
-            Text("Choose the correct answer")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            if let url = wikipediaURL(for: correctAnswer) {
+                Link(destination: url) {
+                    Label("Wikipedia", systemImage: "link")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 .padding(.bottom, 16)
+            } else {
+                Spacer().frame(height: 16)
+            }
         }
         .frame(maxWidth: .infinity)
         .frame(height: 250)
@@ -146,6 +152,11 @@ struct MultipleChoiceView: View {
         return .secondary
     }
     
+    private func wikipediaURL(for answer: String) -> URL? {
+        let encoded = answer.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? answer
+        return URL(string: "https://en.wikipedia.org/wiki/\(encoded)")
+    }
+
     private func choiceBorder(for choice: String) -> Color {
         guard hasAnswered else {
             return .clear
