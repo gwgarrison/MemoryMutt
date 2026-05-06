@@ -1,6 +1,7 @@
 # Release Notes
 
 ## Version 1.19
+- **Speed Round** — new 60-second timed study mode: answer multiple choice questions as fast as you can, track your best score per deck
 - **Per-card accuracy tracking** — see how well you know each card with a correct/incorrect breakdown in the card editor
 - **Incorrect cards repeat in session** — cards you miss are shown again later in the same study session for immediate reinforcement
 - **Difficulty badges** — Hard and Tricky badges highlight struggling cards right in your deck
