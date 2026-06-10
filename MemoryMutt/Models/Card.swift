@@ -6,13 +6,25 @@ enum CardStatus: String, Codable, CaseIterable {
     case learning = "learning"
     case review = "review"
     case mastered = "mastered"
-    
+
     var displayName: String {
         switch self {
         case .new: return "New"
         case .learning: return "Learning"
         case .review: return "Review"
         case .mastered: return "Mastered"
+        }
+    }
+}
+
+enum CardType: String, Codable, CaseIterable {
+    case standard  = "standard"
+    case trueFalse = "trueFalse"
+
+    var displayName: String {
+        switch self {
+        case .standard:  return "Standard"
+        case .trueFalse: return "True / False"
         }
     }
 }
@@ -27,6 +39,7 @@ final class Card {
     var frontAudioURL: String?
     var backAudioURL: String?
     var hint: String?
+    @Attribute var cardTypeRawValue: String = "standard"
     var statusRawValue: String
     var easeFactor: Double
     var interval: Int // in days
@@ -39,6 +52,11 @@ final class Card {
     @Relationship(deleteRule: .cascade, inverse: \Review.card)
     var reviews: [Review] = []
     
+    var cardType: CardType {
+        get { CardType(rawValue: cardTypeRawValue) ?? .standard }
+        set { cardTypeRawValue = newValue.rawValue }
+    }
+
     var status: CardStatus {
         get { CardStatus(rawValue: statusRawValue) ?? .new }
         set { statusRawValue = newValue.rawValue }
@@ -64,6 +82,7 @@ final class Card {
         frontAudioURL: String? = nil,
         backAudioURL: String? = nil,
         hint: String? = nil,
+        cardType: CardType = .standard,
         status: CardStatus = .new,
         easeFactor: Double = 2.5,
         interval: Int = 0,
@@ -79,6 +98,7 @@ final class Card {
         self.frontAudioURL = frontAudioURL
         self.backAudioURL = backAudioURL
         self.hint = hint
+        self.cardTypeRawValue = cardType.rawValue
         self.statusRawValue = status.rawValue
         self.easeFactor = easeFactor
         self.interval = interval

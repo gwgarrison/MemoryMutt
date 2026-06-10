@@ -36,6 +36,7 @@ struct StudySessionView: View {
     @State private var studyMode: StudyMode = .flashcard
     @State private var matchCardCount: Int = 5
     @State private var hasStarted = false
+    @State private var trueFalseFeedback: Bool? = nil
     
     var body: some View {
         NavigationStack {
@@ -57,6 +58,8 @@ struct StudySessionView: View {
                             multipleChoiceCardView(card: card)
                         } else if sessionManager.studyMode == .hangman {
                             hangmanCardView(card: card)
+                        } else if sessionManager.studyMode == .trueFalse || card.cardType == .trueFalse {
+                            trueFalseCardView(card: card)
                         } else {
                             studyCardView(card: card)
                         }
@@ -160,7 +163,7 @@ struct StudySessionView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 
                 // Reverse toggle (only for flashcard mode)
-                if studyMode == .flashcard {
+                if studyMode == .flashcard && studyMode != .trueFalse {
                     Toggle(isOn: $reverseCards) {
                         HStack(spacing: 12) {
                             Image(systemName: "arrow.left.arrow.right")
@@ -267,6 +270,7 @@ struct StudySessionView: View {
         case .matchGame: return "Match questions to answers"
         case .hangman: return "Guess the answer letter by letter"
         case .speedRound: return "60 seconds, answer as many as you can"
+        case .trueFalse: return "Tap True or False for each statement"
         }
     }
     
@@ -492,12 +496,162 @@ struct StudySessionView: View {
         }
     }
     
+    @ViewBuilder
+    private func trueFalseCardView(card: Card) -> some View {
+        let questionText = sessionManager.isReversed ? card.back : card.front
+
+        VStack(spacing: 0) {
+            Spacer()
+
+            VStack(spacing: 0) {
+                // Question half
+                VStack {
+                    Text("Question")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 16)
+
+                    Spacer()
+
+                    Text(questionText)
+                        .font(questionText.isEmoji ? .system(size: 60) : .title2)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
+
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 160)
+
+                Divider()
+                    .padding(.horizontal, 20)
+
+                // Proposed answer half
+                VStack {
+                    Text("Proposed Answer")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 12)
+
+                    Spacer()
+
+                    Text(sessionManager.trueFalseDisplayedAnswer)
+                        .font(sessionManager.trueFalseDisplayedAnswer.isEmoji ? .system(size: 60) : .title2)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
+
+                    Spacer()
+
+                    Text("Is this correct?")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.bottom, 14)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 160)
+            }
+            .background(Color(.systemGray6))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+            .padding(.horizontal, 20)
+            .id(card.id)
+
+            Spacer()
+
+            if let isCorrect = trueFalseFeedback {
+                trueFalseFeedbackView(isCorrect: isCorrect, card: card)
+            } else {
+                trueFalseButtons(card: card)
+            }
+        }
+        .padding(.bottom, 30)
+        .onDisappear {
+            trueFalseFeedback = nil
+        }
+    }
+
+    private func trueFalseButtons(card: Card) -> some View {
+        VStack(spacing: 12) {
+            Text("True or False?")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 20) {
+                Button {
+                    submitTrueFalse(answer: "True", card: card)
+                } label: {
+                    Text("True")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.green)
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                }
+
+                Button {
+                    submitTrueFalse(answer: "False", card: card)
+                } label: {
+                    Text("False")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.red)
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                }
+            }
+            .padding(.horizontal, 20)
+        }
+    }
+
+    private func trueFalseFeedbackView(isCorrect: Bool, card: Card) -> some View {
+        let correctAnswer = sessionManager.isReversed ? card.front : card.back
+        return VStack(spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .foregroundStyle(isCorrect ? .green : .red)
+                Text(isCorrect
+                    ? "Correct! The answer is \"\(correctAnswer)\"."
+                    : "Incorrect. The correct answer is \"\(correctAnswer)\".")
+                    .font(.subheadline)
+                    .foregroundStyle(isCorrect ? .green : .red)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, 20)
+
+            Button {
+                let rating: ReviewRating = isCorrect ? .correct : .incorrect
+                trueFalseFeedback = nil
+                submitRating(rating)
+            } label: {
+                Text("Next")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.accentColor)
+                    .foregroundStyle(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .padding(.horizontal, 20)
+        }
+    }
+
+    private func submitTrueFalse(answer: String, card: Card) {
+        if enableHaptics {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        }
+        let userSaysTrue = (answer == "True")
+        trueFalseFeedback = (userSaysTrue == sessionManager.trueFalseIsTrue)
+    }
+
     private func submitRating(_ rating: ReviewRating) {
         if enableHaptics {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
         }
         isFlipped = false
         showingHint = false
+        trueFalseFeedback = nil
         sessionManager.recordReview(rating: rating)
     }
     

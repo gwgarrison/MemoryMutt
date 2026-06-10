@@ -11,6 +11,7 @@ struct CardEditorView: View {
     @State private var front: String = ""
     @State private var back: String = ""
     @State private var hint: String = ""
+    @State private var cardType: CardType = .standard
     @State private var showingDeleteAlert = false
     
     private var isEditing: Bool { card != nil }
@@ -19,21 +20,53 @@ struct CardEditorView: View {
         NavigationStack {
             Form {
                 Section {
+                    Picker("Card Type", selection: $cardType) {
+                        ForEach(CardType.allCases, id: \.self) { type in
+                            Text(type.displayName).tag(type)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                } header: {
+                    Text("Card Type")
+                } footer: {
+                    Text(cardType == .trueFalse
+                        ? "Shows a statement; learner taps True or False"
+                        : "Shows a question; learner flips to reveal the answer")
+                }
+                .onChange(of: cardType) { _, newType in
+                    if newType == .trueFalse && back != "True" && back != "False" {
+                        back = "True"
+                    }
+                }
+
+                Section {
                     TextField("Front (Question)", text: $front, axis: .vertical)
                         .lineLimit(3...8)
                 } header: {
                     Text("Front")
                 } footer: {
-                    Text("Enter the question or prompt that will be shown first")
+                    Text(cardType == .trueFalse
+                        ? "Enter the statement to evaluate"
+                        : "Enter the question or prompt that will be shown first")
                 }
-                
+
                 Section {
-                    TextField("Back (Answer)", text: $back, axis: .vertical)
-                        .lineLimit(3...8)
+                    if cardType == .trueFalse {
+                        Picker("Answer", selection: $back) {
+                            Text("True").tag("True")
+                            Text("False").tag("False")
+                        }
+                        .pickerStyle(.segmented)
+                    } else {
+                        TextField("Back (Answer)", text: $back, axis: .vertical)
+                            .lineLimit(3...8)
+                    }
                 } header: {
                     Text("Back")
                 } footer: {
-                    Text("Enter the answer that will be revealed when tapped")
+                    Text(cardType == .trueFalse
+                        ? "Select whether the statement is true or false"
+                        : "Enter the answer that will be revealed when tapped")
                 }
                 
                 Section {
@@ -91,6 +124,7 @@ struct CardEditorView: View {
                     front = card.front
                     back = card.back
                     hint = card.hint ?? ""
+                    cardType = card.cardType
                 }
             }
             .alert("Delete Card", isPresented: $showingDeleteAlert) {
@@ -115,13 +149,15 @@ struct CardEditorView: View {
             card.front = front.trimmingCharacters(in: .whitespacesAndNewlines)
             card.back = back.trimmingCharacters(in: .whitespacesAndNewlines)
             card.hint = hint.isEmpty ? nil : hint.trimmingCharacters(in: .whitespacesAndNewlines)
+            card.cardType = cardType
             card.updatedAt = Date()
         } else {
             // Create new card
             let newCard = Card(
                 front: front.trimmingCharacters(in: .whitespacesAndNewlines),
                 back: back.trimmingCharacters(in: .whitespacesAndNewlines),
-                hint: hint.isEmpty ? nil : hint.trimmingCharacters(in: .whitespacesAndNewlines)
+                hint: hint.isEmpty ? nil : hint.trimmingCharacters(in: .whitespacesAndNewlines),
+                cardType: cardType
             )
             newCard.deck = deck
             modelContext.insert(newCard)

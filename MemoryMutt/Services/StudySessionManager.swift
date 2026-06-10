@@ -14,6 +14,8 @@ class StudySessionManager: ObservableObject {
     @Published var currentChoices: [String] = []
     @Published var timeRemaining: Int = 60
     @Published var isBlitzMode: Bool = false
+    @Published var trueFalseDisplayedAnswer: String = ""
+    @Published var trueFalseIsTrue: Bool = true
 
     private var modelContext: ModelContext?
     private var allDeckCards: [Card] = []
@@ -122,6 +124,8 @@ class StudySessionManager: ObservableObject {
         // Generate choices for multiple choice and speed round modes
         if mode == .multipleChoice || mode == .speedRound {
             generateChoices()
+        } else if mode == .trueFalse {
+            generateTrueFalseScenario()
         }
     }
     
@@ -170,6 +174,8 @@ class StudySessionManager: ObservableObject {
             endSession()
         } else if studyMode == .multipleChoice || studyMode == .speedRound {
             generateChoices()
+        } else if studyMode == .trueFalse {
+            generateTrueFalseScenario()
         }
     }
     
@@ -236,6 +242,32 @@ class StudySessionManager: ObservableObject {
         currentChoices = choices
     }
     
+    /// Generate a true/false scenario for the current card: 50% chance of showing the
+    /// correct answer (true), 50% chance of showing a random wrong answer (false).
+    func generateTrueFalseScenario() {
+        guard let card = currentCard else { return }
+        let correctAnswer = isReversed ? card.front : card.back
+        let isTrueScenario = Bool.random()
+
+        if isTrueScenario {
+            trueFalseIsTrue = true
+            trueFalseDisplayedAnswer = correctAnswer
+        } else {
+            let distractors = allDeckCards
+                .filter { $0.id != card.id }
+                .map { isReversed ? $0.front : $0.back }
+                .filter { $0 != correctAnswer }
+            if let distractor = distractors.randomElement() {
+                trueFalseIsTrue = false
+                trueFalseDisplayedAnswer = distractor
+            } else {
+                // Only one card in deck — can't generate a false answer, force true
+                trueFalseIsTrue = true
+                trueFalseDisplayedAnswer = correctAnswer
+            }
+        }
+    }
+
     /// The correct answer for the current card in multiple choice mode
     var correctAnswer: String? {
         guard let card = currentCard else { return nil }

@@ -230,6 +230,17 @@ struct CardRow: View {
             HStack {
                 StatusBadge(status: card.status)
 
+                if card.cardType == .trueFalse {
+                    Text("T/F")
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.indigo.opacity(0.2))
+                        .foregroundStyle(.indigo)
+                        .clipShape(Capsule())
+                }
+
                 if card.isDue {
                     Text("Due")
                         .font(.caption2)
