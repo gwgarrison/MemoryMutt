@@ -33,6 +33,15 @@ final class Deck {
     var masteredCardsCount: Int {
         cards.filter { $0.status == .mastered }.count
     }
+
+    /// Cards in this deck that keep being forgotten, worst first.
+    var troubleCards: [Card] {
+        cards.filter { $0.isTroubleCard }.sorted { $0.troubleScore > $1.troubleScore }
+    }
+
+    var troubleCardsCount: Int {
+        cards.filter { $0.isTroubleCard }.count
+    }
     
     init(
         id: UUID = UUID(),

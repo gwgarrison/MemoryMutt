@@ -15,6 +15,7 @@ struct DeckDetailView: View {
     @State private var showingAddCard = false
     @State private var showingEditDeck = false
     @State private var showingStudySession = false
+    @State private var showingRescueRound = false
     @State private var showingDeleteAlert = false
     @State private var searchText = ""
     @State private var sortOrder: CardSortOrder = .recent
@@ -66,6 +67,21 @@ struct DeckDetailView: View {
                         }
                     }
                     .font(.headline)
+                    
+                    if deck.troubleCardsCount > 0 {
+                        Button {
+                            showingRescueRound = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "cross.case.fill")
+                                    .foregroundStyle(.red)
+                                Text("Rescue Trouble Cards")
+                                Spacer()
+                                Text("\(deck.troubleCardsCount)")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
                 }
             }
             
@@ -160,6 +176,9 @@ struct DeckDetailView: View {
         .fullScreenCover(isPresented: $showingStudySession) {
             StudySessionView(deck: deck)
         }
+        .fullScreenCover(isPresented: $showingRescueRound) {
+            RescueRoundView(cards: deck.troubleCards, deck: deck)
+        }
         .alert("Delete Deck", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
@@ -252,7 +271,16 @@ struct CardRow: View {
                         .clipShape(Capsule())
                 }
 
-                if !card.reviews.isEmpty && card.accuracy < 70 {
+                if card.isTroubleCard {
+                    Label("Trouble", systemImage: "cross.case.fill")
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.red.opacity(0.2))
+                        .foregroundStyle(.red)
+                        .clipShape(Capsule())
+                } else if !card.reviews.isEmpty && card.accuracy < 70 {
                     let isHard = card.accuracy < 50
                     Text(isHard ? "Hard" : "Tricky")
                         .font(.caption2)

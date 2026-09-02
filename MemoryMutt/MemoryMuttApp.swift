@@ -17,12 +17,15 @@ struct MemoryMuttApp: App {
             let storeURL = containerURL.appendingPathComponent("MemoryMutt.store")
             let config = ModelConfiguration(schema: schema, url: storeURL)
             if let container = try? ModelContainer(for: schema, configurations: [config]) {
+                TroubleCardService.backfillLapseCountsIfNeeded(in: container.mainContext)
                 return container
             }
         }
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
-            return try ModelContainer(for: schema, configurations: [config])
+            let container = try ModelContainer(for: schema, configurations: [config])
+            TroubleCardService.backfillLapseCountsIfNeeded(in: container.mainContext)
+            return container
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }

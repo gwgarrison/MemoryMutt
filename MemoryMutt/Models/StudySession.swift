@@ -8,6 +8,11 @@ enum StudyMode: String, Codable, CaseIterable {
     case hangman = "hangman"
     case speedRound = "speedRound"
     case trueFalse = "trueFalse"
+    case rescue = "rescue"
+
+    /// Modes a user can pick for an ordinary deck session. Rescue Rounds are launched
+    /// from the trouble-card entry points instead, with their own card selection.
+    static var selectableModes: [StudyMode] { allCases.filter { $0 != .rescue } }
 
     var displayName: String {
         switch self {
@@ -17,6 +22,7 @@ enum StudyMode: String, Codable, CaseIterable {
         case .hangman: return "Hangman"
         case .speedRound: return "Speed Round"
         case .trueFalse: return "True / False"
+        case .rescue: return "Rescue Round"
         }
     }
 
@@ -28,6 +34,7 @@ enum StudyMode: String, Codable, CaseIterable {
         case .hangman: return "figure.stand"
         case .speedRound: return "bolt.fill"
         case .trueFalse: return "checkmark.circle"
+        case .rescue: return "cross.case.fill"
         }
     }
 }

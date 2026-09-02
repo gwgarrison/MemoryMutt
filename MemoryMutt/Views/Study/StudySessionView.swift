@@ -152,7 +152,7 @@ struct StudySessionView: View {
                     Spacer()
                     
                     Picker("Study Mode", selection: $studyMode) {
-                        ForEach(StudyMode.allCases, id: \.self) { mode in
+                        ForEach(StudyMode.selectableModes, id: \.self) { mode in
                             Text(mode.displayName).tag(mode)
                         }
                     }
@@ -271,6 +271,7 @@ struct StudySessionView: View {
         case .hangman: return "Guess the answer letter by letter"
         case .speedRound: return "60 seconds, answer as many as you can"
         case .trueFalse: return "Tap True or False for each statement"
+        case .rescue: return "Rebuild the cards you keep forgetting"
         }
     }
     

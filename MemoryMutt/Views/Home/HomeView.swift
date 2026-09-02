@@ -5,6 +5,14 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var decks: [Deck]
     @Query(sort: \StudySession.startTime, order: .reverse) private var recentSessions: [StudySession]
+    @Query(filter: #Predicate<Card> { $0.lapseCount >= 1 }) private var lapsedCards: [Card]
+
+    @State private var showingRescueRound = false
+
+    /// Cards across every deck that have been learned and lost again, worst first.
+    private var troubleCards: [Card] {
+        TroubleCardService.sorted(lapsedCards.filter { $0.isTroubleCard })
+    }
     
     private var totalCardsDue: Int {
         decks.reduce(0) { $0 + $1.cardsDueCount }
@@ -28,6 +36,11 @@ struct HomeView: View {
                     // Quick Stats
                     quickStatsSection
                     
+                    // Trouble Cards
+                    if !troubleCards.isEmpty {
+                        troubleCardsSection
+                    }
+                    
                     // Due Cards Section
                     if totalCardsDue > 0 {
                         dueCardsSection
@@ -43,7 +56,60 @@ struct HomeView: View {
                 .padding()
             }
             .navigationTitle("MemoryMutt")
+            .fullScreenCover(isPresented: $showingRescueRound) {
+                RescueRoundView(cards: Array(troubleCards.prefix(12)), deck: nil)
+            }
         }
+    }
+    
+    private var troubleCardsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Trouble Cards")
+                .font(.headline)
+            
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 14) {
+                    Image(systemName: "cross.case.fill")
+                        .font(.title2)
+                        .foregroundStyle(.white)
+                        .frame(width: 44, height: 44)
+                        .background(Color.red)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(troubleCards.count) \(troubleCards.count == 1 ? "card keeps" : "cards keep") slipping away")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        Text("You'd learned \(troubleCards.count == 1 ? "it" : "them") and lost \(troubleCards.count == 1 ? "it" : "them") again")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                    Spacer()
+                }
+                
+                Button {
+                    showingRescueRound = true
+                } label: {
+                    Label(troubleCards.count == 1 ? "Rescue It" : "Rescue Them", systemImage: "cross.case.fill")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(Color.red)
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+            }
+            .padding()
+            .background(Color.red.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.red.opacity(0.25), lineWidth: 1)
+            )
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     private var welcomeHeader: some View {
