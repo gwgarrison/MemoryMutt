@@ -29,7 +29,15 @@ Compile the app without signing — a fast sanity check before a real build
 [bundle exec] fastlane ios screenshots
 ```
 
-Capture App Store screenshots on every configured device (see Snapfile)
+Capture App Store screenshots: iPhone and iPad (see Snapfile), then Apple Watch
+
+### ios watch_screenshots
+
+```sh
+[bundle exec] fastlane ios watch_screenshots
+```
+
+Capture Apple Watch screenshots (snapshot can't drive watchOS, so this uses simctl)
 
 ### ios upload_screenshots
 

@@ -81,12 +81,12 @@ final class ScreenshotTests: XCTestCase {
         return false
     }
 
-    /// Deck cells carry an accessibility label of the form "World Capitals, 248 cards",
-    /// so match on the prefix rather than the bare name — the bare name also appears on
-    /// other rows, and a plain subscript would be ambiguous.
+    /// Deck cells get a combined accessibility label like "105, World Capitals, 248 cards"
+    /// — the due badge reads first — so match "<name>," anywhere in it rather than the
+    /// bare name, which also appears on other rows and would make a subscript ambiguous.
     private func openDeck(named name: String) -> Bool {
         let cell = app.buttons
-            .matching(NSPredicate(format: "label BEGINSWITH %@", "\(name),"))
+            .matching(NSPredicate(format: "label CONTAINS %@", "\(name),"))
             .firstMatch
 
         guard cell.waitForExistence(timeout: 5), cell.isHittable else { return false }

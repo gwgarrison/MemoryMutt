@@ -2,6 +2,9 @@ import SwiftUI
 
 struct WatchStudyView: View {
     let deck: WatchDeckPayload
+    var shuffle = true
+    /// Opens with the first card's answer showing (screenshot runs).
+    var revealFirstCard = false
     @State private var connectivity = WatchConnectivityService.shared
     @State private var cards: [WatchCardPayload] = []
     @State private var currentIndex = 0
@@ -19,7 +22,7 @@ struct WatchStudyView: View {
         }
         .navigationTitle(deck.name)
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear { cards = deck.cards.shuffled() }
+        .onAppear { cards = shuffle ? deck.cards.shuffled() : deck.cards }
     }
 
     private var studyContent: some View {
@@ -28,7 +31,7 @@ struct WatchStudyView: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
 
-            WatchFlashcardView(card: cards[currentIndex]) { rating in
+            WatchFlashcardView(card: cards[currentIndex], startFlipped: revealFirstCard && currentIndex == 0) { rating in
                 handleRating(rating)
             }
             .id(cards[currentIndex].id)

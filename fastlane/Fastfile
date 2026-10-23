@@ -29,9 +29,47 @@ platform :ios do
     )
   end
 
-  desc "Capture App Store screenshots on every configured device (see Snapfile)"
+  desc "Capture App Store screenshots: iPhone and iPad (see Snapfile), then Apple Watch"
   lane :screenshots do
+    # snapshot clears the output folder first, so the watch shots must come after it.
     snapshot
+    watch_screenshots
+  end
+
+  desc "Capture Apple Watch screenshots (snapshot can't drive watchOS, so this uses simctl)"
+  lane :watch_screenshots do
+    root    = File.expand_path("..", __dir__)
+    device  = "Apple Watch Ultra 3 (49mm)"   # 422x514, which App Store Connect files as Watch Ultra
+    out_dir = File.join(root, "fastlane/screenshots/en-US")
+    derived = File.join(root, "build/watch-screenshots")
+    bundle  = "com.manicmutt.MemoryMutt.watchkitapp"
+
+    # Newest runtime that has this device.
+    require "json"
+    runtimes = JSON.parse(sh("xcrun simctl list devices available -j", log: false))["devices"]
+    udid = runtimes.select { |rt, _| rt.include?("watchOS") }
+                   .sort_by { |rt, _| rt.scan(/\d+/).map(&:to_i) }
+                   .reverse
+                   .flat_map { |_, devices| devices }
+                   .find { |d| d["name"] == device }&.fetch("udid")
+    UI.user_error!("No '#{device}' simulator found — add one in Xcode > Devices") unless udid
+
+    sh("xcodebuild -project #{root}/#{XCODEPROJ} -scheme MemoryMuttWatch -configuration Debug " \
+       "-destination 'id=#{udid}' -derivedDataPath '#{derived}' build -quiet")
+
+    sh("xcrun simctl boot #{udid} || true")
+    sh("xcrun simctl bootstatus #{udid} -b", log: false)
+    sh("xcrun simctl status_bar #{udid} override --time 9:41 || true")
+    sh("xcrun simctl install #{udid} '#{derived}/Build/Products/Debug-watchsimulator/MemoryMuttWatch.app'")
+
+    FileUtils.mkdir_p(out_dir)
+    { "01_Decks" => "decks", "02_Question" => "question", "03_Answer" => "answer" }.each do |name, screen|
+      sh("xcrun simctl terminate #{udid} #{bundle} || true", log: false)
+      sh("xcrun simctl launch #{udid} #{bundle} -ScreenshotMode -ScreenshotScreen #{screen}")
+      sleep(4)
+      sh("xcrun simctl io #{udid} screenshot '#{out_dir}/#{device}-#{name}.png'")
+    end
+    sh("xcrun simctl terminate #{udid} #{bundle} || true", log: false)
   end
 
   desc "Upload fastlane/screenshots to App Store Connect, replacing what's there"
@@ -42,7 +80,8 @@ platform :ios do
       skip_metadata: true,
       skip_screenshots: false,
       overwrite_screenshots: true,
-      force: true
+      force: true,
+      run_precheck_before_submit: false   # nothing is submitted here
     )
   end
 
@@ -83,7 +122,9 @@ platform :ios do
       force: true,
       skip_binary_upload: true,
       skip_metadata: false,
-      skip_screenshots: false
+      skip_screenshots: false,
+      # precheck can't inspect IAPs (the tip jar) under API-key auth, and errors out.
+      precheck_include_in_app_purchases: false
     )
   end
 
@@ -96,7 +137,8 @@ platform :ios do
     deliver(
       submit_for_review: true,
       automatic_release: options[:auto_release] == true,
-      force: true
+      force: true,
+      precheck_include_in_app_purchases: false
     )
   end
 end

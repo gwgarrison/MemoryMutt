@@ -11,19 +11,19 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		CC000001000000000000CC04 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 16BFA2152F45531E00448DD8 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = AA000001000000000000AA06;
-			remoteInfo = MemoryMuttWatch;
-		};
 		BB000001000000000000BB11 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 16BFA2152F45531E00448DD8 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 16BFA21C2F45531E00448DD8;
 			remoteInfo = MemoryMutt;
+		};
+		CC000001000000000000CC04 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 16BFA2152F45531E00448DD8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA000001000000000000AA06;
+			remoteInfo = MemoryMuttWatch;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -274,15 +274,15 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		CC000001000000000000CC03 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = AA000001000000000000AA06 /* MemoryMuttWatch */;
-			targetProxy = CC000001000000000000CC04 /* PBXContainerItemProxy */;
-		};
 		BB000001000000000000BB10 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 16BFA21C2F45531E00448DD8 /* MemoryMutt */;
 			targetProxy = BB000001000000000000BB11 /* PBXContainerItemProxy */;
+		};
+		CC000001000000000000CC03 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA000001000000000000AA06 /* MemoryMuttWatch */;
+			targetProxy = CC000001000000000000CC04 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

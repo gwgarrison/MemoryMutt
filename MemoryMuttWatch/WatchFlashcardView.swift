@@ -6,6 +6,12 @@ struct WatchFlashcardView: View {
 
     @State private var isFlipped = false
 
+    init(card: WatchCardPayload, startFlipped: Bool = false, onRate: @escaping (ReviewRating) -> Void) {
+        self.card = card
+        self.onRate = onRate
+        _isFlipped = State(initialValue: startFlipped)
+    }
+
     var body: some View {
         VStack(spacing: 6) {
             cardContent

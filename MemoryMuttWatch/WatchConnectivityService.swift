@@ -33,12 +33,21 @@ final class WatchConnectivityService: NSObject, WCSessionDelegate {
 
     override init() {
         super.init()
+        #if DEBUG
+        if WatchScreenshotDemo.isActive {
+            decks = WatchScreenshotDemo.decks
+            return
+        }
+        #endif
         guard WCSession.isSupported() else { return }
         WCSession.default.delegate = self
         WCSession.default.activate()
     }
 
     func requestDecks() {
+        #if DEBUG
+        if WatchScreenshotDemo.isActive { return }
+        #endif
         let session = WCSession.default
         NSLog("MMWC watch requestDecks state=\(session.activationState.rawValue) reachable=\(session.isReachable) companion=\(session.isCompanionAppInstalled) inFlight=\(isLoading)")
         // One request at a time. Reachability flaps constantly on a real watch, and
