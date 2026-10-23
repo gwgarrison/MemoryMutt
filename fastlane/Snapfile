@@ -1,0 +1,20 @@
+# The two sizes App Store Connect actually requires. Every smaller iPhone auto-scales
+# from the 6.9" shots; the iPad set is required because TARGETED_DEVICE_FAMILY is "1,2".
+devices([
+  "iPhone 17 Pro Max",       # 6.9"
+  "iPad Pro 13-inch (M5)",   # 13"
+])
+
+languages(["en-US"])
+
+project("MemoryMutt.xcodeproj")
+scheme("MemoryMuttUITests")
+
+output_directory("./fastlane/screenshots")
+clear_previous_screenshots(true)
+concurrent_simulators(false)
+stop_after_first_error(true)
+
+# Keep the captures clean: no status-bar noise, no keyboard sliding into frame.
+override_status_bar(true)
+skip_open_summary(true)

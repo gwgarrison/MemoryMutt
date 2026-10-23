@@ -1,0 +1,6 @@
+app_identifier("com.manicmutt.MemoryMutt")
+apple_id("garrisongw@gmail.com")
+team_id("36H8T2F3VH")
+
+# App Store Connect team (only needed if the Apple ID belongs to more than one).
+# itc_team_id("...")

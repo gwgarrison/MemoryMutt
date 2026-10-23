@@ -1,23 +1,17 @@
 import SwiftUI
-import SwiftData
 
 struct WatchStudyView: View {
-    let deck: Deck
-    @Environment(\.modelContext) private var context
-    @State private var dueCards: [Card] = []
+    let deck: WatchDeckPayload
+    @State private var connectivity = WatchConnectivityService.shared
+    @State private var cards: [WatchCardPayload] = []
     @State private var currentIndex = 0
     @State private var correctCount = 0
-    @State private var isLoaded = false
 
-    private var isDone: Bool { currentIndex >= dueCards.count }
+    private var isDone: Bool { currentIndex >= cards.count }
 
     var body: some View {
         Group {
-            if !isLoaded {
-                ProgressView()
-            } else if dueCards.isEmpty {
-                ContentUnavailableView("All Caught Up!", systemImage: "checkmark.circle.fill")
-            } else if isDone {
+            if isDone {
                 completionView
             } else {
                 studyContent
@@ -25,22 +19,19 @@ struct WatchStudyView: View {
         }
         .navigationTitle(deck.name)
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            dueCards = deck.cards.filter { $0.isDue }.shuffled()
-            isLoaded = true
-        }
+        .onAppear { cards = deck.cards.shuffled() }
     }
 
     private var studyContent: some View {
         VStack(spacing: 4) {
-            Text("\(currentIndex + 1) of \(dueCards.count)")
+            Text("\(currentIndex + 1) of \(cards.count)")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
 
-            WatchFlashcardView(card: dueCards[currentIndex]) { rating in
+            WatchFlashcardView(card: cards[currentIndex]) { rating in
                 handleRating(rating)
             }
-            .id(dueCards[currentIndex].id)
+            .id(cards[currentIndex].id)
         }
     }
 
@@ -51,7 +42,7 @@ struct WatchStudyView: View {
                 .foregroundStyle(.yellow)
             Text("Done!")
                 .font(.headline)
-            Text("\(correctCount) of \(dueCards.count) correct")
+            Text("\(correctCount) of \(cards.count) correct")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -59,13 +50,16 @@ struct WatchStudyView: View {
     }
 
     private func handleRating(_ rating: ReviewRating) {
-        let card = dueCards[currentIndex]
+        let card = cards[currentIndex]
         if rating == .correct { correctCount += 1 }
-        SM2Algorithm.applyReview(to: card, rating: rating)
-        let review = Review(rating: rating, timeSpent: 0)
-        review.card = card
-        context.insert(review)
-        try? context.save()
+
+        let result = SM2Algorithm.calculateNextReview(
+            currentEaseFactor: card.easeFactor,
+            currentInterval: card.interval,
+            currentStatus: card.status,
+            rating: rating
+        )
+        connectivity.sendReview(cardID: card.id, rating: rating, result: result)
         currentIndex += 1
     }
 }

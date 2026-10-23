@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct WatchFlashcardView: View {
-    let card: Card
+    let card: WatchCardPayload
     let onRate: (ReviewRating) -> Void
 
     @State private var isFlipped = false

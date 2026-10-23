@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+DerivedData/
+build/
+*.xcuserstate
+
+# fastlane secrets — never commit these
+fastlane/.env
+fastlane/.env.*
+!fastlane/.env.example
+fastlane/private/*
+!fastlane/private/.gitkeep
+*.p8
+*.p12
+*.mobileprovision
+
+# fastlane output
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
+*.ipa
+*.dSYM.zip

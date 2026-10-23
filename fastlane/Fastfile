@@ -1,0 +1,102 @@
+default_platform(:ios)
+
+XCODEPROJ = "MemoryMutt.xcodeproj"
+SCHEME    = "MemoryMutt"
+
+platform :ios do
+  # App Store Connect API key auth. Set these in fastlane/.env (see .env.example).
+  # Any lane that talks to App Store Connect calls this first; gym/pilot/deliver
+  # pick the key up from lane_context automatically.
+  private_lane :asc_auth do
+    app_store_connect_api_key(
+      key_id: ENV.fetch("ASC_KEY_ID"),
+      issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+      key_filepath: ENV["ASC_KEY_FILEPATH"] || "fastlane/private/AuthKey.p8",
+      duration: 1200,
+      in_house: false
+    )
+  end
+
+  desc "Compile the app without signing — a fast sanity check before a real build"
+  lane :build do
+    gym(
+      scheme: SCHEME,
+      configuration: "Debug",
+      skip_package_ipa: true,
+      skip_archive: true,
+      destination: "generic/platform=iOS Simulator",
+      skip_codesigning: true
+    )
+  end
+
+  desc "Capture App Store screenshots on every configured device (see Snapfile)"
+  lane :screenshots do
+    snapshot
+  end
+
+  desc "Upload fastlane/screenshots to App Store Connect, replacing what's there"
+  lane :upload_screenshots do
+    asc_auth
+    deliver(
+      skip_binary_upload: true,
+      skip_metadata: true,
+      skip_screenshots: false,
+      overwrite_screenshots: true,
+      force: true
+    )
+  end
+
+  desc "Capture screenshots and upload them in one go"
+  lane :refresh_screenshots do
+    screenshots
+    upload_screenshots
+  end
+
+  desc "Bump the build number, archive, and upload to TestFlight (internal testers)"
+  lane :beta do |options|
+    asc_auth
+    increment_build_number(xcodeproj: XCODEPROJ) unless options[:skip_build_increment]
+    gym(scheme: SCHEME, export_method: "app-store")
+    pilot(skip_waiting_for_build_processing: true)
+  end
+
+  desc "Same as beta, but also distributes to the External Testers group"
+  lane :beta_external do |options|
+    asc_auth
+    increment_build_number(xcodeproj: XCODEPROJ)
+    gym(scheme: SCHEME, export_method: "app-store")
+    pilot(
+      distribute_external: true,
+      groups: ["External Testers"],
+      changelog: options[:changelog] || "Bug fixes and improvements",
+      skip_waiting_for_build_processing: false
+    )
+  end
+
+  desc "Submit the latest TestFlight build for App Store review (no new build)"
+  lane :release do
+    asc_auth
+    deliver(
+      build_number: latest_testflight_build_number.to_s,
+      submit_for_review: true,
+      automatic_release: false,
+      force: true,
+      skip_binary_upload: true,
+      skip_metadata: false,
+      skip_screenshots: false
+    )
+  end
+
+  desc "Build a fresh version, upload it, and submit for review. Pass version:1.22 to bump."
+  lane :release_full do |options|
+    asc_auth
+    increment_version_number(xcodeproj: XCODEPROJ, version_number: options[:version]) if options[:version]
+    increment_build_number(xcodeproj: XCODEPROJ)
+    gym(scheme: SCHEME, export_method: "app-store")
+    deliver(
+      submit_for_review: true,
+      automatic_release: options[:auto_release] == true,
+      force: true
+    )
+  end
+end
