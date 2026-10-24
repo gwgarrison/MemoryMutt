@@ -47,6 +47,14 @@ Capture Apple Watch screenshots (snapshot can't drive watchOS, so this uses simc
 
 Upload fastlane/screenshots to App Store Connect, replacing what's there
 
+### ios upload_metadata
+
+```sh
+[bundle exec] fastlane ios upload_metadata
+```
+
+Upload the listing text, categories, review info, and age rating in fastlane/metadata
+
 ### ios refresh_screenshots
 
 ```sh

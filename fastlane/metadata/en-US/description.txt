@@ -1,0 +1,40 @@
+MemoryMutt helps you learn anything — and remember it. Build your own flashcard decks or start with a ready-made one, and MemoryMutt's spaced repetition schedules every card for the moment you're about to forget it, so your study time goes where it counts.
+
+SEVEN WAYS TO STUDY
+• Flashcard — recall the answer, then check yourself
+• Multiple Choice — pick the right answer from four
+• True / False — is the answer shown correct?
+• Match Game — pair questions with their answers
+• Hangman — spell the answer one letter at a time
+• Speed Round — beat the clock
+• Rescue Round — targeted practice for the cards you keep missing
+
+SPACED REPETITION THAT ADAPTS TO YOU
+MemoryMutt uses the proven SM-2 algorithm. Cards you know well come back less often; cards you miss come back sooner. Each card moves from New to Learning to Review to Mastered as you go.
+
+TROUBLE CARDS, RESCUED
+MemoryMutt notices the cards that keep slipping away and flags them as Trouble Cards. A Rescue Round works through them until they stick — and lets you add a hint when one keeps tripping you up.
+
+STARTER DECKS, READY TO GO
+• World Capitals
+• US State Capitals
+• US Presidents
+• Spanish Vocabulary
+• French Vocabulary
+
+STUDY ON YOUR WRIST
+The Apple Watch app brings your due cards to your wrist for quick review sessions. Your answers sync back to your iPhone.
+
+YOUR DECKS, YOUR WAY
+• Create and edit your own decks and cards, with optional hints
+• Import cards from CSV files (comma, semicolon, tab, or pipe separated)
+• Export any deck to CSV
+• Set daily limits for new and review cards
+
+TRACK YOUR PROGRESS
+Study streaks, accuracy, time studied, and an activity heatmap show how far you've come.
+
+PRIVATE BY DESIGN
+No account. No ads. No tracking. Everything you create stays on your device.
+
+MemoryMutt is free to use. If it helps you learn, an optional Tip Jar lets you support its development.

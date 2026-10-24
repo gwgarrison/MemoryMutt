@@ -1,0 +1,7 @@
+No account or sign-in is required. All data is stored on the device.
+
+To try the app quickly: open the Decks tab and tap Add next to any Starter Deck (for example World Capitals), then open the Study tab and pick a study mode.
+
+Apple Watch: the watch app studies cards that are due on the paired iPhone and sends answers back via WatchConnectivity. Add a starter deck on the iPhone first, keep the iPhone nearby, then open MemoryMutt on the watch.
+
+The Tip Jar (Settings > Tip Jar) offers three optional consumable tips. They unlock no content or features.

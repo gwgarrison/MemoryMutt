@@ -24,3 +24,6 @@ fastlane/screenshots/**/*.png
 fastlane/test_output/
 *.ipa
 *.dSYM.zip
+
+# App Review contact phone — the repo is public
+fastlane/metadata/review_information/phone_number.txt

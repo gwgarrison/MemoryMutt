@@ -3,6 +3,13 @@ default_platform(:ios)
 XCODEPROJ = "MemoryMutt.xcodeproj"
 SCHEME    = "MemoryMutt"
 
+# Automatic signing may need to create or refresh App Store profiles — the embedded
+# watch app needs its own — so let xcodebuild talk to the developer portal.
+APP_STORE_BUILD = {
+  export_method: "app-store",
+  xcargs: "-allowProvisioningUpdates"   # gym forwards this to the export step too
+}.freeze
+
 platform :ios do
   # App Store Connect API key auth. Set these in fastlane/.env (see .env.example).
   # Any lane that talks to App Store Connect calls this first; gym/pilot/deliver
@@ -85,6 +92,21 @@ platform :ios do
     )
   end
 
+  desc "Upload the listing text, categories, review info, and age rating in fastlane/metadata"
+  lane :upload_metadata do
+    asc_auth
+    deliver(
+      # Matching the project's version also renames the editable App Store version to it.
+      app_version: get_version_number(xcodeproj: XCODEPROJ, target: "MemoryMutt"),
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      skip_metadata: false,
+      app_rating_config_path: "fastlane/app_rating_config.json",
+      force: true,
+      run_precheck_before_submit: false   # nothing is submitted here
+    )
+  end
+
   desc "Capture screenshots and upload them in one go"
   lane :refresh_screenshots do
     screenshots
@@ -95,7 +117,7 @@ platform :ios do
   lane :beta do |options|
     asc_auth
     increment_build_number(xcodeproj: XCODEPROJ) unless options[:skip_build_increment]
-    gym(scheme: SCHEME, export_method: "app-store")
+    gym(scheme: SCHEME, **APP_STORE_BUILD)
     pilot(skip_waiting_for_build_processing: true)
   end
 
@@ -103,7 +125,7 @@ platform :ios do
   lane :beta_external do |options|
     asc_auth
     increment_build_number(xcodeproj: XCODEPROJ)
-    gym(scheme: SCHEME, export_method: "app-store")
+    gym(scheme: SCHEME, **APP_STORE_BUILD)
     pilot(
       distribute_external: true,
       groups: ["External Testers"],
@@ -133,7 +155,7 @@ platform :ios do
     asc_auth
     increment_version_number(xcodeproj: XCODEPROJ, version_number: options[:version]) if options[:version]
     increment_build_number(xcodeproj: XCODEPROJ)
-    gym(scheme: SCHEME, export_method: "app-store")
+    gym(scheme: SCHEME, **APP_STORE_BUILD)
     deliver(
       submit_for_review: true,
       automatic_release: options[:auto_release] == true,
