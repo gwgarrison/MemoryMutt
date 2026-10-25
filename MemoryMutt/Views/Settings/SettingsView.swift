@@ -3,6 +3,7 @@ import SwiftData
 
 struct SettingsView: View {
     @State private var showingTipJar = false
+    @State private var tipJarAvailable = false
     @AppStorage("dailyCardLimit") private var dailyCardLimit: Int = 100
     @AppStorage("newCardsPerDay") private var newCardsPerDay: Int = 20
     @AppStorage("cardsPerSession") private var cardsPerSession: Int = 20
@@ -84,11 +85,13 @@ struct SettingsView: View {
                 Section("About") {
                     LabeledContent("Version", value: "1.0.0")
 
-                    Button {
-                        showingTipJar = true
-                    } label: {
-                        Label("Tip Jar", systemImage: "heart.fill")
-                            .foregroundStyle(.pink)
+                    if tipJarAvailable {
+                        Button {
+                            showingTipJar = true
+                        } label: {
+                            Label("Tip Jar", systemImage: "heart.fill")
+                                .foregroundStyle(.pink)
+                        }
                     }
 
                     NavigationLink {
@@ -112,6 +115,7 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .task { tipJarAvailable = await TipJarService.productsAvailable() }
             .sheet(isPresented: $showingTipJar) {
                 TipJarView()
             }

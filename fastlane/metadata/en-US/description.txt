@@ -37,4 +37,4 @@ Study streaks, accuracy, time studied, and an activity heatmap show how far you'
 PRIVATE BY DESIGN
 No account. No ads. No tracking. Everything you create stays on your device.
 
-MemoryMutt is free to use. If it helps you learn, an optional Tip Jar lets you support its development.
+MemoryMutt is free, with no subscriptions or in-app purchases.

@@ -25,6 +25,13 @@ class TipJarService {
         Task { await loadProducts() }
     }
 
+    /// Whether the tips are actually live in the App Store. Settings hides the Tip Jar
+    /// until they are, so a build never offers a store with nothing to buy.
+    static func productsAvailable() async -> Bool {
+        let products = (try? await Product.products(for: productIDs)) ?? []
+        return !products.isEmpty
+    }
+
     func loadProducts() async {
         loadingState = .loading
         do {

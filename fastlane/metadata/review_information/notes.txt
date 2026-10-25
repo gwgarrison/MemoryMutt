@@ -1,7 +1,22 @@
-No account or sign-in is required. All data is stored on the device.
+1. SCREEN RECORDING
+A screen recording captured on an iPhone running the latest iOS is attached to our reply in App Store Connect. It starts at app launch and shows the typical flow. MemoryMutt has no account registration or login, no user-generated content shared with other users, and no paid content, features, or in-app purchases.
 
-To try the app quickly: open the Decks tab and tap Add next to any Starter Deck (for example World Capitals), then open the Study tab and pick a study mode.
+2. PURPOSE AND TARGET AUDIENCE
+MemoryMutt is a flashcard app for students, language learners, and anyone memorizing facts such as vocabulary, geography, history, or exam material. It solves the problem of forgetting what you study: a spaced-repetition scheduler (the SM-2 algorithm) shows each card again just before you are likely to forget it, so study time goes to the cards that need it. Seven study modes (Flashcard, Multiple Choice, True/False, Match Game, Hangman, Speed Round, and a Rescue Round for frequently missed cards) keep practice varied, and statistics track streaks and accuracy. An Apple Watch companion app allows quick review sessions on the wrist.
 
-Apple Watch: the watch app studies cards that are due on the paired iPhone and sends answers back via WatchConnectivity. Add a starter deck on the iPhone first, keep the iPhone nearby, then open MemoryMutt on the watch.
+3. HOW TO ACCESS THE MAIN FEATURES
+No account, login, credentials, or sample files are required.
+- Launch the app and open the Decks tab. Under Starter Decks, tap Add next to any deck (for example, World Capitals).
+- Open the Study tab, choose the deck and a study mode, and answer the cards.
+- The Statistics tab shows streaks, accuracy, study time, and an activity heatmap.
+- To make your own deck, tap + on the Decks tab. Decks can also be imported from a CSV file (Settings > Import from CSV) and exported (Settings > Export Data).
+- Apple Watch: after adding a deck on the iPhone, keep the iPhone nearby and open MemoryMutt on the paired Apple Watch. Due cards appear on the watch, and answers sync back to the iPhone.
 
-The Tip Jar (Settings > Tip Jar) offers three optional consumable tips. They unlock no content or features.
+4. EXTERNAL SERVICES
+None. MemoryMutt has no server, account system, payment processor, analytics, advertising, AI service, or third-party SDK. All data is stored on the device using Apple's SwiftData. The only other Apple framework involved in core functionality is WatchConnectivity, which sends cards directly between the user's own iPhone and Apple Watch. Some study screens show an optional "Wikipedia" link that opens the related article in Safari; no feature depends on it.
+
+5. REGIONAL DIFFERENCES
+None. The app functions identically in all regions. The interface is in English; the starter decks are in English, plus Spanish and French vocabulary decks.
+
+6. REGULATED INDUSTRY / PROTECTED MATERIAL
+Not applicable. The app does not operate in a regulated industry, and its starter decks contain only public factual information (world and US state capitals, US presidents, and common vocabulary). No licensed or protected third-party material is included.
